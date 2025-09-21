@@ -4,7 +4,7 @@ import { Genre, Filter } from '@/types';
 import type { Movie, Paginated } from '@/types';
 import { parseMovies } from './utils';
 
-type MoviesParams = { genre?: Genre; genreUrl?: string; filter?: Filter };
+export type MoviesParams = { genre?: Genre; genreUrl?: string; filter?: Filter };
 
 export class Movies extends Page<Movie[]> {
   constructor(scraper: Scraper) {

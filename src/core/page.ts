@@ -6,6 +6,9 @@ import { ParsingError } from '@/errors';
 import type { Logger } from 'pino';
 
 export abstract class Page<T> {
+  /**
+   * @internal
+   */
   protected readonly scraper: Scraper;
   protected readonly logger: Logger;
 

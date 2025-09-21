@@ -4,7 +4,7 @@ import { NetworkError } from '@/errors';
 import { Career } from '@/types';
 import type { PersonDetails, Movie } from '@/types';
 
-type PersonInput = string | { personId: number; movieId: number };
+export type PersonInput = string | { personId: number; movieId: number };
 
 export class Person extends Page<PersonDetails> {
   constructor(scraper: Scraper) {

@@ -1,31 +1,13 @@
-import { Scraper } from '@/scraper';
-import type { Movie } from '@/types';
-import type { LoginResult, UserProfile } from '@/parsers/auth';
+export * from '@/scraper';
+export { Scraper as _CoreScraper } from '@/core/scraper';
+export * from '@/parsers/auth';
+export * from '@/parsers/comments';
+export * from '@/parsers/continue';
+export * from '@/parsers/genres';
+export * from '@/parsers/movies';
+export * from '@/parsers/person';
+export * from '@/parsers/search';
+export * from '@/parsers/stream';
+export { Movie as MovieParser } from '@/parsers/movie';
 
-export { Scraper };
-export type { Movie, LoginResult, UserProfile };
-
-// Example usage:
-//
-// async function main() {
-//   const scraper = new Scraper();
-//
-//   // Log in
-//   const loginResult = await scraper.auth.login('your-email', 'your-password');
-//   if (!loginResult.success) {
-//     console.error('Login failed:', loginResult.message);
-//     return;
-//   }
-//
-//   console.log('Login successful!');
-//
-//   // Get user profile
-//   const profile = await scraper.auth.getProfile();
-//   console.log('User Profile:', profile);
-//
-//   // Get new movies
-//   const movies = await scraper.movies.extract();
-//   console.log('New Movies:', movies);
-// }
-//
-// main();
+export type * from '@/types';

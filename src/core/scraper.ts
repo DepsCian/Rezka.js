@@ -5,6 +5,9 @@ import { NetworkError, NotFoundError } from '@/errors';
 import { logger } from '@/logger';
 import type { Logger } from 'pino';
 
+/**
+ * @internal
+ */
 export class Scraper {
   public readonly client: Got;
   public readonly cookieJar: CookieJar;

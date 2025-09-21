@@ -9,18 +9,51 @@ import { Continue } from '@/parsers/continue';
 import { StreamParser } from '@/parsers/stream';
 import { Comments } from '@/parsers/comments';
 
+/**
+ * The main class for interacting with the parser.
+ */
 export class Scraper {
   private readonly core: CoreScraper;
+  /**
+   * Parser for interacting with movie sections.
+   */
   public readonly movies: Movies;
+  /**
+   * Parser for authentication.
+   */
   public readonly auth: Auth;
+  /**
+   * Parser for retrieving detailed movie information.
+   */
   public readonly movie: Movie;
+  /**
+   * Parser for retrieving information about persons (actors, directors).
+   */
   public readonly person: Person;
+  /**
+   * Parser for working with genres.
+   */
   public readonly genres: Genres;
+  /**
+   * Parser for performing searches.
+   */
   public readonly search: Search;
+  /**
+   * Parser for the "continue watching" list.
+   */
   public readonly continue: Continue;
+  /**
+   * Parser for getting video stream sources.
+   */
   public readonly stream: StreamParser;
+  /**
+   * Parser for working with comments.
+   */
   public readonly comments: Comments;
 
+  /**
+   * @param baseURL Optional parameter to change the site mirror.
+   */
   constructor(baseURL?: string) {
     this.core = new CoreScraper(baseURL);
     this.movies = new Movies(this.core);
