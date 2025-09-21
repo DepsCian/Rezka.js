@@ -9,9 +9,9 @@
     "allowJs": true,
     // Bundler mode
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true,
+    "declaration": true,
+    "outDir": "./dist",
     // Best practices
     "strict": true,
     "skipLibCheck": true,
@@ -27,5 +27,7 @@
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "tests"],
+  "include": ["src", "index.ts", "eslint.config.ts"]
 }
