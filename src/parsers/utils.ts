@@ -1,5 +1,6 @@
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
+import { logger } from '../logger';
 import type { Movie, Stream, Subtitle, PersonCredit, Link, Translator } from '../types';
 
 type Extractor = {
@@ -22,6 +23,7 @@ export function parseMovies($: CheerioAPI, extractor: Extractor): Movie[] {
         try {
           return extractor.extractText($, $el, '.info');
         } catch (e) {
+          logger.warn({ error: e }, 'Failed to parse additionalInfo in parseMovies');
           return undefined;
         }
       })(),
@@ -94,7 +96,7 @@ export function parsePersons($: CheerioAPI, table: Cheerio<Element>, label: stri
       const name = extractor.extractText($, $el, 'span[itemprop="name"]');
       persons.push({ id, name });
     } catch (e) {
-      // Ignore if person item is malformed
+      logger.warn({ error: e, label }, 'Failed to parse person item in parsePersons');
     }
   });
   return persons.length > 0 ? persons : undefined;
@@ -109,7 +111,7 @@ export function parseLinks($: CheerioAPI, table: Cheerio<Element>, label: string
       const url = extractor.extractAttribute($, $el, 'href');
       links.push({ name, url });
     } catch (e) {
-      // Ignore if link is malformed
+      logger.warn({ error: e, label }, 'Failed to parse link item in parseLinks');
     }
   });
   return links.length > 0 ? links : undefined;

@@ -63,7 +63,9 @@ export class Continue extends Page<WatchedMovie[]> {
             lastWatchedAt
           });
         }
-      } catch (e) {/* ignore */}
+      } catch (e) {
+        this.logger.warn({ error: e }, 'Failed to parse a watched movie item');
+      }
     });
 
     return movies;

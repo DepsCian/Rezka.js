@@ -2,12 +2,16 @@ import got, { HTTPError, RequestError } from 'got';
 import type { Got, OptionsOfTextResponseBody, ExtendOptions } from 'got';
 import { CookieJar } from 'tough-cookie';
 import { NetworkError, NotFoundError } from '../errors';
+import { logger } from '../logger';
+import type { Logger } from 'pino';
 
 export class Scraper {
   public readonly client: Got;
   public readonly cookieJar: CookieJar;
+  public readonly logger: Logger;
 
   constructor(baseURL: string = 'https://rezka.ag/', config: ExtendOptions = {}) {
+    this.logger = logger;
     this.cookieJar = new CookieJar();
     const cache = new Map();
     this.client = got.extend({

@@ -22,11 +22,11 @@ export class Movie extends Page<MovieDetails> {
 
     const primaryInfo = this._extractPrimaryInfo($, url);
     const infoTable = $('.b-post__info');
-    const metadata = this._extractMetadata($, infoTable);
+    const metadata = this._extractMetadata($, infoTable, url);
     const credits = this._extractCredits($, infoTable);
-    const ratings = this._extractRatings($);
-    const seriesInfo = this._extractSeriesInfo($, parseTranslators($));
-    const franchise = this._extractFranchise($);
+    const ratings = this._extractRatings($, url);
+    const seriesInfo = this._extractSeriesInfo($, parseTranslators($), url);
+    const franchise = this._extractFranchise($, url);
     
     const description = this.extractText($, '.b-post__description_text');
     
@@ -65,17 +65,21 @@ export class Movie extends Page<MovieDetails> {
     let originalTitle: string | undefined;
     try {
       originalTitle = this.extractText($, '.b-post__origtitle');
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { id, url } }, 'Failed to extract originalTitle');
+    }
     const poster = this.extractAttribute($, '.b-sidecover img', 'src');
 
     return { id, title, originalTitle, poster };
   }
 
-  private _extractMetadata($: CheerioAPI, infoTable: Cheerio<Element>) {
+  private _extractMetadata($: CheerioAPI, infoTable: Cheerio<Element>, url: string) {
     let slogan: string | undefined;
     try {
       slogan = this.extractText($, infoTable, 'tr:contains("Слоган") td:last-child').replace(/[«»]/g, '');
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { url } }, 'Failed to extract slogan');
+    }
 
     const releaseDate = parseDate(this.extractText($, infoTable, 'tr:contains("Дата выхода") td:last-child'));
     const country = this.extractText($, infoTable, 'tr:contains("Страна") td:last-child');
@@ -84,12 +88,16 @@ export class Movie extends Page<MovieDetails> {
     let ageRestriction: number | undefined;
     try {
       ageRestriction = parseInt(this.extractText($, infoTable, 'tr:contains("Возраст") td:last-child'), 10);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { url } }, 'Failed to extract ageRestriction');
+    }
 
     let duration: number | undefined;
     try {
       duration = parseInt(this.extractText($, infoTable, 'tr:contains("Время") td:last-child'), 10);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { url } }, 'Failed to extract duration');
+    }
 
     return {
       slogan,
@@ -115,7 +123,7 @@ export class Movie extends Page<MovieDetails> {
     return { directors, actors, genres, collections, lists };
   }
 
-  private _extractRatings($: CheerioAPI) {
+  private _extractRatings($: CheerioAPI, url: string) {
     const rating: { imdb?: Rating; kinopoisk?: Rating; main?: Rating; } = {};
 
     try {
@@ -124,7 +132,9 @@ export class Movie extends Page<MovieDetails> {
       const imdbVotesMatch = this.extractText($, imdbRatingNode, 'i').match(/\(([\d\s,]+)\)/);
       const imdbVotes = imdbVotesMatch ? Number(imdbVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
       if(imdbRating && imdbVotes) rating.imdb = { rating: imdbRating, votes: imdbVotes };
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { url } }, 'Failed to extract imdb rating');
+    }
 
     try {
       const kinopoiskRatingNode = $('.b-post__info_rates.kp');
@@ -132,19 +142,23 @@ export class Movie extends Page<MovieDetails> {
       const kinopoiskVotesMatch = this.extractText($, kinopoiskRatingNode, 'i').match(/\(([\d\s,]+)\)/);
       const kinopoiskVotes = kinopoiskVotesMatch ? Number(kinopoiskVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
       if(kinopoiskRating && kinopoiskVotes) rating.kinopoisk = { rating: kinopoiskRating, votes: kinopoiskVotes };
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { url } }, 'Failed to extract kinopoisk rating');
+    }
 
     try {
       const mainRatingText = this.extractText($, '.b-post__rating .num');
       const mainVotesText = this.extractText($, '.b-post__rating .votes');
       const mainMatch = mainVotesText.match(/\(([\d,]+)\)/);
       if(mainRatingText && mainMatch && mainMatch[1]) rating.main = { rating: Number(mainRatingText), votes: Number(mainMatch[1].replace(/,/g, '')) };
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      this.logger.warn({ error: e, context: { url } }, 'Failed to extract main rating');
+    }
 
     return rating;
   }
 
-  private _extractSeriesInfo($: CheerioAPI, translators: import('../types').Translator[] | undefined) {
+  private _extractSeriesInfo($: CheerioAPI, translators: import('../types').Translator[] | undefined, url: string) {
     let currentWatch: MovieDetails['currentWatch'] | undefined;
     const seasons: Season[] = [];
     let updatedTranslators = translators;
@@ -203,7 +217,7 @@ export class Movie extends Page<MovieDetails> {
             }
           }
         } catch (e) {
-          // ignore
+          this.logger.warn({ error: e, context: { url } }, 'Failed to parse initCDNSeriesEvents arguments');
         }
       }
     }
@@ -215,25 +229,25 @@ export class Movie extends Page<MovieDetails> {
     }
   }
 
-  private _extractFranchise($: CheerioAPI): FranchisePart[] | undefined {
+  private _extractFranchise($: CheerioAPI, url: string): FranchisePart[] | undefined {
     const franchise: FranchisePart[] = [];
 
     $('.b-post__partcontent_item').each((_, el) => {
       const $el = $(el);
       try {
-        const url = this.extractAttribute($, $el, 'data-url');
+        const itemUrl = this.extractAttribute($, $el, 'data-url');
         const title = this.extractText($, $el, '.title');
         const year = parseInt(this.extractText($, $el, '.year'), 10);
         const rating = parseFloat(this.extractText($, $el, '.rating'));
 
         franchise.push({
-          url,
+          url: itemUrl,
           title,
           year,
           rating: isNaN(rating) ? undefined : rating
         });
       } catch (e) {
-        // ignore malformed franchise items
+        this.logger.warn({ error: e, context: { url } }, 'Failed to parse franchise item');
       }
     });
 

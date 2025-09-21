@@ -3,12 +3,15 @@ import { load } from 'cheerio';
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
 import { ParsingError } from '../errors';
+import type { Logger } from 'pino';
 
 export abstract class Page<T> {
   protected readonly scraper: Scraper;
+  protected readonly logger: Logger;
 
   constructor(scraper: Scraper) {
     this.scraper = scraper;
+    this.logger = scraper.logger;
   }
 
   protected parse(html: string): CheerioAPI {
