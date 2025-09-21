@@ -1,6 +1,6 @@
 {
   "name": "rezka.js",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A powerful Node.js library for the unofficial HDRezka API. This scraper and parser allows you to programmatically access movies, series, and user data with a clean, promise-based interface.",
   "author": "DepsCian <ciandeps@gmail.com>",
   "homepage": "https://github.com/DepsCian/rezka.js#readme",
@@ -13,6 +13,12 @@
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
@@ -33,7 +39,7 @@
     "cheerio",
     "got"
   ],
-  "module": "index.ts",
+  "module": "./dist/index.js",
   "type": "module",
   "scripts": {
     "lint": "eslint . --ext .js,.ts",
