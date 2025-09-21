@@ -1,7 +1,7 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import { ContentType } from '../types';
-import type { GenreInfo } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import { ContentType } from '@/types';
+import type { GenreInfo } from '@/types';
 
 export class Genres extends Page<Record<ContentType, GenreInfo[]>> {
   constructor(scraper: Scraper) {

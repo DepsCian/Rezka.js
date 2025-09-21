@@ -1,6 +1,6 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import type { Stream, Subtitle } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import type { Stream, Subtitle } from '@/types';
 import { parseStreams, parseSubtitles } from './utils';
 
 export class StreamParser extends Page<never> {

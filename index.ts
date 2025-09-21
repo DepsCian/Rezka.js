@@ -1,6 +1,6 @@
-import { Scraper } from './src/scraper';
-import type { Movie } from './src/parsers/movies';
-import type { LoginResult, UserProfile } from './src/parsers/auth';
+import { Scraper } from '@/scraper';
+import type { Movie } from '@/types';
+import type { LoginResult, UserProfile } from '@/parsers/auth';
 
 export { Scraper };
 export type { Movie, LoginResult, UserProfile };

@@ -1,7 +1,7 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import { Genre, Filter } from '../types';
-import type { Movie, Paginated } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import { Genre, Filter } from '@/types';
+import type { Movie, Paginated } from '@/types';
 import { parseMovies } from './utils';
 
 type MoviesParams = { genre?: Genre; genreUrl?: string; filter?: Filter };

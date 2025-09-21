@@ -1,6 +1,6 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import type { Movie, Paginated } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import type { Movie, Paginated } from '@/types';
 import { parseMovies } from './utils';
 
 export class Search extends Page<Movie[]> {

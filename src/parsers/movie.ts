@@ -1,7 +1,7 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import type { MovieDetails, Season, Rating, FranchisePart } from '../types';
-import { parseLinks, parsePersons, parseDate, parseTranslators } from './utils';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import type { MovieDetails, Season, Rating, FranchisePart } from '@/types';
+import { parseLinks, parsePersons, parseDate, parseTranslators } from '@/parsers/utils';
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
 
@@ -172,7 +172,7 @@ export class Movie extends Page<MovieDetails> {
 
   private _extractSeriesInfo(
     $: CheerioAPI,
-    translators: import('../types').Translator[] | undefined,
+    translators: import('@/types').Translator[] | undefined,
     url: string
   ) {
     let currentWatch: MovieDetails['currentWatch'] | undefined;

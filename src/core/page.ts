@@ -2,7 +2,7 @@ import type { Scraper } from './scraper';
 import { load } from 'cheerio';
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
-import { ParsingError } from '../errors';
+import { ParsingError } from '@/errors';
 import type { Logger } from 'pino';
 
 export abstract class Page<T> {

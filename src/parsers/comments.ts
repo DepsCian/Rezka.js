@@ -1,6 +1,6 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import type { Comment, Paginated, Like } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import type { Comment, Paginated, Like } from '@/types';
 import type { Element } from 'domhandler';
 import { load } from 'cheerio';
 import { parseDateTime } from './utils';

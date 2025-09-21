@@ -1,13 +1,13 @@
-import { Scraper as CoreScraper } from './core/scraper';
-import { Movies } from './parsers/movies';
-import { Auth } from './parsers/auth';
-import { Movie } from './parsers/movie';
-import { Person } from './parsers/person';
-import { Genres } from './parsers/genres';
-import { Search } from './parsers/search';
-import { Continue } from './parsers/continue';
-import { StreamParser } from './parsers/stream';
-import { Comments } from './parsers/comments';
+import { Scraper as CoreScraper } from '@/core/scraper';
+import { Movies } from '@/parsers/movies';
+import { Auth } from '@/parsers/auth';
+import { Movie } from '@/parsers/movie';
+import { Person } from '@/parsers/person';
+import { Genres } from '@/parsers/genres';
+import { Search } from '@/parsers/search';
+import { Continue } from '@/parsers/continue';
+import { StreamParser } from '@/parsers/stream';
+import { Comments } from '@/parsers/comments';
 
 export class Scraper {
   private readonly core: CoreScraper;

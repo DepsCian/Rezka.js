@@ -1,8 +1,8 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import { NetworkError } from '../errors';
-import { Career } from '../types';
-import type { PersonDetails, Movie } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import { NetworkError } from '@/errors';
+import { Career } from '@/types';
+import type { PersonDetails, Movie } from '@/types';
 
 type PersonInput = string | { personId: number; movieId: number };
 

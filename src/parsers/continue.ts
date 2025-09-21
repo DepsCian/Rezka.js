@@ -1,6 +1,6 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import type { WatchedMovie } from '../types';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import type { WatchedMovie } from '@/types';
 
 function toYMD(date: Date): string {
   return date.toISOString().slice(0, 10);

@@ -1,6 +1,6 @@
-import { Page } from '../core/page';
-import type { Scraper } from '../core/scraper';
-import { AuthError } from '../errors';
+import { Page } from '@/core/page';
+import type { Scraper } from '@/core/scraper';
+import { AuthError } from '@/errors';
 
 export interface LoginResult {
   success: boolean;

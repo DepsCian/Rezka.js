@@ -1,7 +1,7 @@
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
-import { logger } from '../logger';
-import type { Movie, Stream, Subtitle, PersonCredit, Link, Translator } from '../types';
+import { logger } from '@/logger';
+import type { Movie, Stream, Subtitle, PersonCredit, Link, Translator } from '@/types';
 
 type Extractor = {
   extractText: ($: CheerioAPI, context: Cheerio<Element> | string, selector?: string) => string;

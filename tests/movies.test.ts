@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test';
-import { Scraper } from '../src/scraper';
-import { Genre, Filter } from '../src/types';
+import { Scraper } from '@/scraper';
+import { Genre, Filter } from '@/types';
 
 describe('Movies Parser', () => {
   it('should get a list of series and save all to a file', async () => {
