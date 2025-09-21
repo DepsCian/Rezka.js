@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/github/package-json/v/DepsCian/rezka.js?style=for-the-badge" alt="Version" />
 </p>
 
-An advanced, unofficial Node.js library for the HDRezka API. This scraper and parser allows you to programmatically access movies, series, and user data with a clean, promise-based interface.
+An advanced, unofficial Node.js API-library for the HDRezka. This scraper and parser allows you to programmatically access movies, series, and user data with a clean, promise-based interface.
 
 ## Features
 
