@@ -1,8 +1,40 @@
 {
-  "name": "hdrezka-scrapper",
+  "name": "rezka.js",
+  "version": "1.0.1",
+  "description": "A powerful Node.js library for the unofficial HDRezka API. This scraper and parser allows you to programmatically access movies, series, and user data with a clean, promise-based interface.",
+  "author": "DepsCian <ciandeps@gmail.com>",
+  "homepage": "https://github.com/DepsCian/rezka.js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DepsCian/rezka.js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DepsCian/rezka.js/issues"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "hdrezka",
+    "rezka",
+    "api",
+    "scraper",
+    "parser",
+    "library",
+    "nodejs",
+    "typescript",
+    "movie",
+    "series",
+    "film",
+    "video",
+    "stream",
+    "cheerio",
+    "got"
+  ],
   "module": "index.ts",
   "type": "module",
-  "private": true,
   "scripts": {
     "lint": "eslint . --ext .js,.ts",
     "lint:fix": "eslint . --ext .js,.ts --fix",
