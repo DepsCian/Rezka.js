@@ -161,7 +161,7 @@ export interface Paginated<T> {
     pageSize: number;
     total?: number;
     totalPages?: number;
-  }
+  };
 }
 
 export interface WatchedMovie {
@@ -175,25 +175,25 @@ export interface WatchedMovie {
 }
 
 export interface Comment {
-    id: number;
-    author: CommentAuthor;
-    text: string;
-    date: string;
-    likes: number;
-    isSpoiler: boolean;
-    replies: Comment[];
+  id: number;
+  author: CommentAuthor;
+  text: string;
+  date: string;
+  likes: number;
+  isSpoiler: boolean;
+  replies: Comment[];
 }
 
 export interface CommentAuthor {
-    name: string;
-    avatar: string;
+  name: string;
+  avatar: string;
 }
 
 export interface Like {
-    author: LikeAuthor;
+  author: LikeAuthor;
 }
 
 export interface LikeAuthor {
-    name: string;
-    avatar: string;
+  name: string;
+  avatar: string;
 }

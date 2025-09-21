@@ -8,7 +8,15 @@ export class Search extends Page<Movie[]> {
     super(scraper);
   }
 
-  public async get({ query, page = 1, pageSize = 36 }: { query: string, page?: number, pageSize?: number }): Promise<Paginated<Movie>> {
+  public async get({
+    query,
+    page = 1,
+    pageSize = 36,
+  }: {
+    query: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<Paginated<Movie>> {
     const response = await this.scraper.get('search/', {
       searchParams: {
         do: 'search',
@@ -21,7 +29,7 @@ export class Search extends Page<Movie[]> {
     const $ = this.parse(response.body);
     const moviesOnPage = parseMovies($, {
       extractText: this.extractText.bind(this),
-      extractAttribute: this.extractAttribute.bind(this)
+      extractAttribute: this.extractAttribute.bind(this),
     });
 
     return {
@@ -29,7 +37,7 @@ export class Search extends Page<Movie[]> {
       meta: {
         currentPage: page,
         pageSize,
-      }
+      },
     };
   }
 
@@ -51,7 +59,7 @@ export class Search extends Page<Movie[]> {
       const $ = this.parse(response.body);
       const moviesOnPage = parseMovies($, {
         extractText: this.extractText.bind(this),
-        extractAttribute: this.extractAttribute.bind(this)
+        extractAttribute: this.extractAttribute.bind(this),
       });
 
       if (moviesOnPage.length === 0) {
@@ -63,9 +71,9 @@ export class Search extends Page<Movie[]> {
 
       const nextButton = $('.b-navigation__next');
       if (nextButton.length === 0 || nextButton.parent().is('span')) {
-          hasNextPage = false;
+        hasNextPage = false;
       }
-      
+
       page++;
     }
 
@@ -73,6 +81,8 @@ export class Search extends Page<Movie[]> {
   }
 
   public async extract(): Promise<Movie[]> {
-    throw new Error('This method is not applicable for the Search parser. Use get() or getAll() instead.');
+    throw new Error(
+      'This method is not applicable for the Search parser. Use get() or getAll() instead.'
+    );
   }
 }

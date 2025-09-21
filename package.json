@@ -1,0 +1,50 @@
+{
+  "name": "hdrezka-scrapper",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint . --ext .js,.ts",
+    "lint:fix": "eslint . --ext .js,.ts --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.44.0",
+    "@typescript-eslint/parser": "^8.44.0",
+    "depcheck": "^1.4.7",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.4.0",
+    "jiti": "^2.5.1",
+    "prettier": "^3.6.2",
+    "typedoc": "^0.28.13",
+    "typescript-eslint": "^8.44.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2",
+    "domhandler": "^5.0.3",
+    "got": "^14.4.9",
+    "pino": "^9.11.0",
+    "pino-pretty": "^13.1.1",
+    "tough-cookie": "^6.0.0"
+  },
+  "depcheck": {
+    "ignores": [
+      "pino-pretty",
+      "@typescript-eslint/parser",
+      "@typescript-eslint/eslint-plugin",
+      "eslint-config-prettier",
+      "eslint-plugin-prettier",
+      "globals",
+      "@eslint/js",
+      "typescript-eslint"
+    ]
+  }
+}

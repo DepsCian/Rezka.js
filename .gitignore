@@ -36,4 +36,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Garbage
 *.json
 *.txt
+!.eslintrc.json
+!.prettierrc.json
+!package.json
 !tsconfig.json

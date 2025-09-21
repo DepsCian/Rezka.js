@@ -5,8 +5,13 @@ import type { Movie, Stream, Subtitle, PersonCredit, Link, Translator } from '..
 
 type Extractor = {
   extractText: ($: CheerioAPI, context: Cheerio<Element> | string, selector?: string) => string;
-  extractAttribute: ($: CheerioAPI, context: Cheerio<Element> | string, attribute: string, selector?: string) => string;
-}
+  extractAttribute: (
+    $: CheerioAPI,
+    context: Cheerio<Element> | string,
+    attribute: string,
+    selector?: string
+  ) => string;
+};
 
 export function parseMovies($: CheerioAPI, extractor: Extractor): Movie[] {
   const moviesOnPage: Movie[] = [];
@@ -35,8 +40,18 @@ export function parseMovies($: CheerioAPI, extractor: Extractor): Movie[] {
 export function parseDate(dateStr: string): string | undefined {
   if (!dateStr) return undefined;
   const months: { [key: string]: string } = {
-    'января': '01', 'февраля': '02', 'марта': '03', 'апреля': '04', 'мая': '05', 'июня': '06',
-    'июля': '07', 'августа': '08', 'сентября': '09', 'октября': '10', 'ноября': '11', 'декабря': '12'
+    января: '01',
+    февраля: '02',
+    марта: '03',
+    апреля: '04',
+    мая: '05',
+    июня: '06',
+    июля: '07',
+    августа: '08',
+    сентября: '09',
+    октября: '10',
+    ноября: '11',
+    декабря: '12',
   };
   const parts = dateStr.split(' ');
   if (parts.length < 3) return undefined;
@@ -50,44 +65,59 @@ export function parseDate(dateStr: string): string | undefined {
 }
 
 export function parseDateTime(dateStr: string): string | undefined {
-    if (!dateStr) return undefined;
+  if (!dateStr) return undefined;
 
-    const cleanedDateStr = dateStr.replace('оставлен', '').trim();
-    const now = new Date();
+  const cleanedDateStr = dateStr.replace('оставлен', '').trim();
+  const now = new Date();
 
-    const timeMatch = cleanedDateStr.match(/(\d{2}):(\d{2})$/);
-    const time = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}:00` : '00:00:00';
+  const timeMatch = cleanedDateStr.match(/(\d{2}):(\d{2})$/);
+  const time = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}:00` : '00:00:00';
 
-    if (cleanedDateStr.includes('сегодня')) {
-        const today = now.toISOString().split('T')[0];
-        return `${today}T${time}.000Z`;
+  if (cleanedDateStr.includes('сегодня')) {
+    const today = now.toISOString().split('T')[0];
+    return `${today}T${time}.000Z`;
+  }
+  if (cleanedDateStr.includes('вчера')) {
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    return `${yesterdayStr}T${time}.000Z`;
+  }
+
+  const months: { [key: string]: string } = {
+    января: '01',
+    февраля: '02',
+    марта: '03',
+    апреля: '04',
+    мая: '05',
+    июня: '06',
+    июля: '07',
+    августа: '08',
+    сентября: '09',
+    октября: '10',
+    ноября: '11',
+    декабря: '12',
+  };
+
+  const dateParts = cleanedDateStr.match(/(\d{1,2})\s+(\p{L}+)\s+(\d{4})/u);
+  if (dateParts && dateParts[1] && dateParts[2] && dateParts[3]) {
+    const day = dateParts[1].padStart(2, '0');
+    const month = months[dateParts[2]];
+    const year = dateParts[3];
+    if (day && month && year) {
+      return `${year}-${month}-${day}T${time}.000Z`;
     }
-    if (cleanedDateStr.includes('вчера')) {
-        const yesterday = new Date(now);
-        yesterday.setDate(now.getDate() - 1);
-        const yesterdayStr = yesterday.toISOString().split('T')[0];
-        return `${yesterdayStr}T${time}.000Z`;
-    }
+  }
 
-    const months: { [key: string]: string } = {
-        'января': '01', 'февраля': '02', 'марта': '03', 'апреля': '04', 'мая': '05', 'июня': '06',
-        'июля': '07', 'августа': '08', 'сентября': '09', 'октября': '10', 'ноября': '11', 'декабря': '12'
-    };
-
-    const dateParts = cleanedDateStr.match(/(\d{1,2})\s+(\p{L}+)\s+(\d{4})/u);
-    if (dateParts && dateParts[1] && dateParts[2] && dateParts[3]) {
-        const day = dateParts[1].padStart(2, '0');
-        const month = months[dateParts[2]];
-        const year = dateParts[3];
-        if (day && month && year) {
-            return `${year}-${month}-${day}T${time}.000Z`;
-        }
-    }
-
-    return undefined;
+  return undefined;
 }
 
-export function parsePersons($: CheerioAPI, table: Cheerio<Element>, label: string, extractor: Extractor): PersonCredit[] | undefined {
+export function parsePersons(
+  $: CheerioAPI,
+  table: Cheerio<Element>,
+  label: string,
+  extractor: Extractor
+): PersonCredit[] | undefined {
   const persons: PersonCredit[] = [];
   table.find(`tr:contains("${label}") .persons-list-holder .item`).each((_, el) => {
     const $el = $(el).find('.person-name-item');
@@ -102,7 +132,12 @@ export function parsePersons($: CheerioAPI, table: Cheerio<Element>, label: stri
   return persons.length > 0 ? persons : undefined;
 }
 
-export function parseLinks($: CheerioAPI, table: Cheerio<Element>, label: string, extractor: Extractor): Link[] | undefined {
+export function parseLinks(
+  $: CheerioAPI,
+  table: Cheerio<Element>,
+  label: string,
+  extractor: Extractor
+): Link[] | undefined {
   const links: Link[] = [];
   table.find(`tr:contains("${label}") a`).each((_, el) => {
     const $el = $(el);
@@ -117,74 +152,80 @@ export function parseLinks($: CheerioAPI, table: Cheerio<Element>, label: string
   return links.length > 0 ? links : undefined;
 }
 
-export function parseTranslators($: any): Translator[] | undefined {
-    const translators: Translator[] = [];
-    const popularityMap = new Map<string, number>();
+export function parseTranslators($: CheerioAPI): Translator[] | undefined {
+  const translators: Translator[] = [];
+  const popularityMap = new Map<string, number>();
 
-    const statsTitle = $('.b-rgstats__help').attr('title');
-    if (statsTitle) {
-        const $stats = $(statsTitle);
-        $stats.find('.b-rgstats__list_item').each((_: number, item: Element) => {
-            const $item = $(item);
-            const name = $item.find('.title').text().trim();
-            const popularityText = $item.find('.count').text().replace('%', '').replace(',', '.');
-            const popularity = parseFloat(popularityText);
-            if (name && !isNaN(popularity)) {
-                popularityMap.set(name, popularity);
-            }
-        });
-    }
-
-    $('.b-translator__item').each((_: number, el: Element) => {
-        const $el = $(el);
-        const id = $el.data('translator_id');
-        const name = $el.attr('title');
-        if (id && name) {
-            const popularity = popularityMap.get(name.trim());
-            translators.push({
-                id: Number(id),
-                name: name.trim(),
-                popularity,
-                isPaid: $el.hasClass('b-prem_translator')
-            });
-        }
+  const statsTitle = $('.b-rgstats__help').attr('title');
+  if (statsTitle) {
+    const $stats = $(statsTitle);
+    $stats.find('.b-rgstats__list_item').each((_: number, item: Element) => {
+      const $item = $(item);
+      const name = $item.find('.title').text().trim();
+      const popularityText = $item.find('.count').text().replace('%', '').replace(',', '.');
+      const popularity = parseFloat(popularityText);
+      if (name && !isNaN(popularity)) {
+        popularityMap.set(name, popularity);
+      }
     });
-    return translators.length > 0 ? translators : undefined;
+  }
+
+  $('.b-translator__item').each((_: number, el: Element) => {
+    const $el = $(el);
+    const id = $el.data('translator_id');
+    const name = $el.attr('title');
+    if (id && name) {
+      const popularity = popularityMap.get(name.trim());
+      translators.push({
+        id: Number(id),
+        name: name.trim(),
+        popularity,
+        isPaid: $el.hasClass('b-prem_translator'),
+      });
+    }
+  });
+  return translators.length > 0 ? translators : undefined;
 }
 
 function escapeRegExp(string: string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function product<T>(...arrays: T[][]): T[][] {
+  return arrays.reduce<T[][]>(
+    (acc, val) => acc.flatMap((d) => val.map((e) => [...d, e])),
+    [[]]
+  );
+}
+
 export function parseStreams(obfuscatedUrls: string): Stream[] {
-  let trashString = obfuscatedUrls.replace("#h", "").split("//_//").join("");
-  const trashList = ["@", "#", "!", "^", "$"];
+  let trashString = obfuscatedUrls.replace('#h', '').split('//_//').join('');
+  const trashList = ['@', '#', '!', '^', '$'];
   const trashCodesSet: string[] = [];
 
   for (let i = 2; i < 4; i++) {
-      const product = (...a: any[][]) => a.reduce((a, b) => a.flatMap(d => b.map(e => [d, e].flat())));
-      const combinations = product(...Array(i).fill(trashList));
-      
-      for (const chars of combinations) {
-          const trashCombo = Buffer.from(chars.join('')).toString('base64');
-          trashCodesSet.push(trashCombo);
-      }
+    const combinations = product(...Array(i).fill(trashList));
+
+    for (const chars of combinations) {
+      const trashCombo = Buffer.from(chars.join('')).toString('base64');
+      trashCodesSet.push(trashCombo);
+    }
   }
 
   for (const trashCode of trashCodesSet) {
     trashString = trashString.replace(new RegExp(escapeRegExp(trashCode), 'g'), '');
   }
-  
+
   const streamsStr = Buffer.from(trashString, 'base64').toString('utf8');
 
   const streamRegex = /\[([^\]]+)\]([^,]+)/g;
-  let match;
   const streams: Stream[] = [];
 
+  let match: RegExpExecArray | null;
   while ((match = streamRegex.exec(streamsStr)) !== null) {
     if (match[1] && match[2]) {
       const quality = match[1];
-      match[2].split(' or ').forEach(url => {
+      match[2].split(' or ').forEach((url) => {
         if (url.includes('//')) {
           streams.push({ quality, url: url.trim() });
         }
@@ -202,7 +243,7 @@ export function parseSubtitles(subtitlesStr: string): Subtitle[] {
     if (match[1] && match[2]) {
       subtitles.push({
         language: match[1],
-        url: match[2]
+        url: match[2],
       });
     }
   }

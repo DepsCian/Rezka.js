@@ -15,7 +15,7 @@ function parseDate(dateStr: string): string {
     today.setDate(today.getDate() - 1);
     return toYMD(today);
   }
-  
+
   const parts = dateStr.match(/(\d{2})-(\d{2})-(\d{4})/);
   if (parts) {
     const [, day, month, year] = parts;
@@ -39,7 +39,7 @@ export class Continue extends Page<WatchedMovie[]> {
       try {
         const element = $(el);
         const idStr = this.extractAttribute($, element, 'id');
-        
+
         if (!idStr.includes('videosave-')) return;
 
         const titleElement = element.find('.td.title a');
@@ -48,7 +48,14 @@ export class Continue extends Page<WatchedMovie[]> {
         const imageUrl = this.extractAttribute($, titleElement, 'data-cover_url');
         const id = parseInt(idStr.replace('videosave-', ''), 10);
         const details = this.extractText($, element, '.td.title small');
-        const lastWatchedInfo = element.find('.td.info').clone().children().remove().end().text().trim(); // This is complex, leave as is for now
+        const lastWatchedInfo = element
+          .find('.td.info')
+          .clone()
+          .children()
+          .remove()
+          .end()
+          .text()
+          .trim(); // This is complex, leave as is for now
         const dateStr = this.extractText($, element, '.td.date');
         const lastWatchedAt = parseDate(dateStr);
 
@@ -60,7 +67,7 @@ export class Continue extends Page<WatchedMovie[]> {
             imageUrl,
             details,
             lastWatchedInfo,
-            lastWatchedAt
+            lastWatchedAt,
           });
         }
       } catch (e) {

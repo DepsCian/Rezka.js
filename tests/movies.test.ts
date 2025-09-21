@@ -1,18 +1,16 @@
 import { describe, it, expect } from 'bun:test';
 import { Scraper } from '../src/scraper';
 import { Genre, Filter } from '../src/types';
-import fs from 'fs';
-import path from 'path';
 
 describe('Movies Parser', () => {
   it('should get a list of series and save all to a file', async () => {
     const scraper = new Scraper();
-    
+
     const paginatedResult = await scraper.movies.get({
       genre: Genre.SERIES,
       filter: Filter.WATCHING,
       page: 1,
-      pageSize: 5
+      pageSize: 5,
     });
 
     expect(paginatedResult.data).toBeInstanceOf(Array);

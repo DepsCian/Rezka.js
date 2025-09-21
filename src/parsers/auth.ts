@@ -29,13 +29,15 @@ export class Auth extends Page<LoginResult | UserProfile> {
     const response = await this.scraper.client.post('ajax/login/', {
       form: Object.fromEntries(params),
       headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+        'X-Requested-With': 'XMLHttpRequest',
+      },
     });
 
     const setCookieHeader = response.headers['set-cookie'];
     if (setCookieHeader) {
-      const userIdCookie = setCookieHeader.find(c => c.startsWith('dle_user_id=') && !c.includes('deleted'));
+      const userIdCookie = setCookieHeader.find(
+        (c) => c.startsWith('dle_user_id=') && !c.includes('deleted')
+      );
       if (userIdCookie) {
         const match = userIdCookie.match(/dle_user_id=([^;]+)/);
         if (match && match[1]) {
@@ -58,11 +60,13 @@ export class Auth extends Page<LoginResult | UserProfile> {
     return {
       email: this.extractAttribute($, '#email', 'value') || null,
       gender: this.extractText($, '#gender option:selected') || null,
-      avatar: this.extractAttribute($, '#avatar-profile img', 'src') || null
+      avatar: this.extractAttribute($, '#avatar-profile img', 'src') || null,
     };
   }
 
   public async extract(): Promise<LoginResult | UserProfile> {
-    throw new Error('This method is not applicable for the Auth parser. Use login() or getProfile() instead.');
+    throw new Error(
+      'This method is not applicable for the Auth parser. Use login() or getProfile() instead.'
+    );
   }
 }

@@ -1,12 +1,7 @@
 import { Page } from '../core/page';
 import type { Scraper } from '../core/scraper';
 import type { MovieDetails, Season, Rating, FranchisePart } from '../types';
-import {
-  parseLinks,
-  parsePersons,
-  parseDate,
-  parseTranslators,
-} from './utils';
+import { parseLinks, parsePersons, parseDate, parseTranslators } from './utils';
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
 
@@ -27,9 +22,9 @@ export class Movie extends Page<MovieDetails> {
     const ratings = this._extractRatings($, url);
     const seriesInfo = this._extractSeriesInfo($, parseTranslators($), url);
     const franchise = this._extractFranchise($, url);
-    
+
     const description = this.extractText($, '.b-post__description_text');
-    
+
     const roadmap: MovieDetails['roadmap'] = [];
     $('.b-post__schedule_list tr').each((_, el) => {
       const $el = $(el);
@@ -76,18 +71,26 @@ export class Movie extends Page<MovieDetails> {
   private _extractMetadata($: CheerioAPI, infoTable: Cheerio<Element>, url: string) {
     let slogan: string | undefined;
     try {
-      slogan = this.extractText($, infoTable, 'tr:contains("Слоган") td:last-child').replace(/[«»]/g, '');
+      slogan = this.extractText($, infoTable, 'tr:contains("Слоган") td:last-child').replace(
+        /[«»]/g,
+        ''
+      );
     } catch (e) {
       this.logger.warn({ error: e, context: { url } }, 'Failed to extract slogan');
     }
 
-    const releaseDate = parseDate(this.extractText($, infoTable, 'tr:contains("Дата выхода") td:last-child'));
+    const releaseDate = parseDate(
+      this.extractText($, infoTable, 'tr:contains("Дата выхода") td:last-child')
+    );
     const country = this.extractText($, infoTable, 'tr:contains("Страна") td:last-child');
     const quality = this.extractText($, infoTable, 'tr:contains("В качестве") td:last-child');
-    
+
     let ageRestriction: number | undefined;
     try {
-      ageRestriction = parseInt(this.extractText($, infoTable, 'tr:contains("Возраст") td:last-child'), 10);
+      ageRestriction = parseInt(
+        this.extractText($, infoTable, 'tr:contains("Возраст") td:last-child'),
+        10
+      );
     } catch (e) {
       this.logger.warn({ error: e, context: { url } }, 'Failed to extract ageRestriction');
     }
@@ -105,14 +108,14 @@ export class Movie extends Page<MovieDetails> {
       country: country || undefined,
       quality: quality || undefined,
       ageRestriction: isNaN(ageRestriction!) ? undefined : ageRestriction,
-      duration: isNaN(duration!) ? undefined : duration
+      duration: isNaN(duration!) ? undefined : duration,
     };
   }
 
   private _extractCredits($: CheerioAPI, infoTable: Cheerio<Element>) {
     const extractor = {
       extractText: this.extractText.bind(this),
-      extractAttribute: this.extractAttribute.bind(this)
+      extractAttribute: this.extractAttribute.bind(this),
     };
     const directors = parsePersons($, infoTable, 'Режиссер', extractor);
     const actors = parsePersons($, infoTable, 'В ролях актеры', extractor);
@@ -124,14 +127,14 @@ export class Movie extends Page<MovieDetails> {
   }
 
   private _extractRatings($: CheerioAPI, url: string) {
-    const rating: { imdb?: Rating; kinopoisk?: Rating; main?: Rating; } = {};
+    const rating: { imdb?: Rating; kinopoisk?: Rating; main?: Rating } = {};
 
     try {
       const imdbRatingNode = $('.b-post__info_rates.imdb');
       const imdbRating = Number(this.extractText($, imdbRatingNode, '.bold'));
       const imdbVotesMatch = this.extractText($, imdbRatingNode, 'i').match(/\(([\d\s,]+)\)/);
       const imdbVotes = imdbVotesMatch ? Number(imdbVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
-      if(imdbRating && imdbVotes) rating.imdb = { rating: imdbRating, votes: imdbVotes };
+      if (imdbRating && imdbVotes) rating.imdb = { rating: imdbRating, votes: imdbVotes };
     } catch (e) {
       this.logger.warn({ error: e, context: { url } }, 'Failed to extract imdb rating');
     }
@@ -139,9 +142,14 @@ export class Movie extends Page<MovieDetails> {
     try {
       const kinopoiskRatingNode = $('.b-post__info_rates.kp');
       const kinopoiskRating = Number(this.extractText($, kinopoiskRatingNode, '.bold'));
-      const kinopoiskVotesMatch = this.extractText($, kinopoiskRatingNode, 'i').match(/\(([\d\s,]+)\)/);
-      const kinopoiskVotes = kinopoiskVotesMatch ? Number(kinopoiskVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
-      if(kinopoiskRating && kinopoiskVotes) rating.kinopoisk = { rating: kinopoiskRating, votes: kinopoiskVotes };
+      const kinopoiskVotesMatch = this.extractText($, kinopoiskRatingNode, 'i').match(
+        /\(([\d\s,]+)\)/
+      );
+      const kinopoiskVotes = kinopoiskVotesMatch
+        ? Number(kinopoiskVotesMatch[1]?.replace(/[\s,]/g, ''))
+        : 0;
+      if (kinopoiskRating && kinopoiskVotes)
+        rating.kinopoisk = { rating: kinopoiskRating, votes: kinopoiskVotes };
     } catch (e) {
       this.logger.warn({ error: e, context: { url } }, 'Failed to extract kinopoisk rating');
     }
@@ -150,7 +158,11 @@ export class Movie extends Page<MovieDetails> {
       const mainRatingText = this.extractText($, '.b-post__rating .num');
       const mainVotesText = this.extractText($, '.b-post__rating .votes');
       const mainMatch = mainVotesText.match(/\(([\d,]+)\)/);
-      if(mainRatingText && mainMatch && mainMatch[1]) rating.main = { rating: Number(mainRatingText), votes: Number(mainMatch[1].replace(/,/g, '')) };
+      if (mainRatingText && mainMatch && mainMatch[1])
+        rating.main = {
+          rating: Number(mainRatingText),
+          votes: Number(mainMatch[1].replace(/,/g, '')),
+        };
     } catch (e) {
       this.logger.warn({ error: e, context: { url } }, 'Failed to extract main rating');
     }
@@ -158,7 +170,11 @@ export class Movie extends Page<MovieDetails> {
     return rating;
   }
 
-  private _extractSeriesInfo($: CheerioAPI, translators: import('../types').Translator[] | undefined, url: string) {
+  private _extractSeriesInfo(
+    $: CheerioAPI,
+    translators: import('../types').Translator[] | undefined,
+    url: string
+  ) {
     let currentWatch: MovieDetails['currentWatch'] | undefined;
     const seasons: Season[] = [];
     let updatedTranslators = translators;
@@ -168,30 +184,34 @@ export class Movie extends Page<MovieDetails> {
       const seasonId = Number($seasonEl.data('tab_id'));
       if (seasonId) {
         const season: Season = { id: seasonId, title: $seasonEl.text(), episodes: [] };
-        
-        $(`#simple-episodes-list-${seasonId} .b-simple_episode__item`).each((_: number, episodeEl: Element) => {
-          const $episodeEl = $(episodeEl);
-          const episodeId = $episodeEl.data('episode_id');
-          if (episodeId) {
-            season.episodes.push({
-              id: Number(episodeId),
-              title: $episodeEl.text()
-            });
+
+        $(`#simple-episodes-list-${seasonId} .b-simple_episode__item`).each(
+          (_: number, episodeEl: Element) => {
+            const $episodeEl = $(episodeEl);
+            const episodeId = $episodeEl.data('episode_id');
+            if (episodeId) {
+              season.episodes.push({
+                id: Number(episodeId),
+                title: $episodeEl.text(),
+              });
+            }
           }
-        });
+        );
         seasons.push(season);
       }
     });
-    
+
     if (seasons.length === 0) {
-        seasons.push({
+      seasons.push({
+        id: 0,
+        title: 'Сезон 0',
+        episodes: [
+          {
             id: 0,
-            title: 'Сезон 0',
-            episodes: [{
-                id: 0,
-                title: 'Эпизод 0'
-            }]
-        });
+            title: 'Эпизод 0',
+          },
+        ],
+      });
     }
 
     const scriptContent = $('script:contains("initCDNSeriesEvents")').last().html();
@@ -210,23 +230,28 @@ export class Movie extends Page<MovieDetails> {
             };
 
             if (!updatedTranslators || updatedTranslators.length === 0) {
-                updatedTranslators = [{
-                    id: translatorId,
-                    name: 'Unknown'
-                }];
+              updatedTranslators = [
+                {
+                  id: translatorId,
+                  name: 'Unknown',
+                },
+              ];
             }
           }
         } catch (e) {
-          this.logger.warn({ error: e, context: { url } }, 'Failed to parse initCDNSeriesEvents arguments');
+          this.logger.warn(
+            { error: e, context: { url } },
+            'Failed to parse initCDNSeriesEvents arguments'
+          );
         }
       }
     }
-    
+
     return {
-        seasons: seasons.length > 0 ? seasons : undefined,
-        currentWatch,
-        translators: updatedTranslators
-    }
+      seasons: seasons.length > 0 ? seasons : undefined,
+      currentWatch,
+      translators: updatedTranslators,
+    };
   }
 
   private _extractFranchise($: CheerioAPI, url: string): FranchisePart[] | undefined {
@@ -244,7 +269,7 @@ export class Movie extends Page<MovieDetails> {
           url: itemUrl,
           title,
           year,
-          rating: isNaN(rating) ? undefined : rating
+          rating: isNaN(rating) ? undefined : rating,
         });
       } catch (e) {
         this.logger.warn({ error: e, context: { url } }, 'Failed to parse franchise item');
@@ -256,8 +281,8 @@ export class Movie extends Page<MovieDetails> {
 
   private async _getUrlFromId(id: number): Promise<string> {
     const response = await this.scraper.client.post('engine/ajax/quick_content.php', {
-      form: { id, is_touch: 1, },
-      headers: { 'X-Requested-With': 'XMLHttpRequest', },
+      form: { id, is_touch: 1 },
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
     });
 
     const $ = this.parse(response.body);

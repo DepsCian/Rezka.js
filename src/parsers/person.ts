@@ -15,15 +15,15 @@ export class Person extends Page<PersonDetails> {
     const response = await this.scraper.client.post('ajax/person_info/', {
       form: {
         id: personId,
-        pid: movieId
+        pid: movieId,
       },
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
       },
-      responseType: 'json'
+      responseType: 'json',
     });
 
-    const body = response.body as { success: boolean, message: string, person?: { link: string } };
+    const body = response.body as { success: boolean; message: string; person?: { link: string } };
 
     if (!body.success || !body.person?.link) {
       throw new NetworkError(body.message || 'Failed to fetch person URL from AJAX');
@@ -59,13 +59,13 @@ export class Person extends Page<PersonDetails> {
           title: this.extractText($, $movieEl, '.b-content__inline_item-link a'),
           imageUrl: this.extractAttribute($, $movieEl, 'src', '.b-content__inline_item-cover img'),
           type: $movieEl.find('.cat').is('.series') ? 'series' : 'movie',
-          details: this.extractText($, $movieEl, '.misc')
+          details: this.extractText($, $movieEl, '.misc'),
         });
       });
 
       filmography[role] = movies;
     });
-    
+
     let personId: number;
     if (typeof input === 'string') {
       personId = Number(url.match(/-(\d+)-/)?.[1] || 0);
@@ -79,15 +79,26 @@ export class Person extends Page<PersonDetails> {
       name: this.extractText($, '.b-post__title .t1'),
       originalName: this.extractText($, '.b-post__title .t2') || undefined,
       photo: this.extractAttribute($, '.b-sidecover img', 'src'),
-      careers: $('.b-post__info tr:contains("Карьера") a').map((_, el) => {
-        const text = $(el).text().toLowerCase();
-        const careerKey = Object.keys(Career).find(key => (Career[key as keyof typeof Career] as string).toLowerCase() === text);
-        return careerKey ? Career[careerKey as keyof typeof Career] : undefined;
-      }).get().filter((c): c is Career => !!c),
-      height: parseFloat(this.extractText($, '.b-post__info tr:contains("Рост") td', ':last-child')) || undefined,
-      birthDate: this.extractAttribute($, '.b-post__info time[itemprop="birthDate"]', 'datetime') || undefined,
-      birthPlace: this.extractText($, '.b-post__info tr:contains("Место рождения") td', ':last-child') || undefined,
-      filmography
+      careers: $('.b-post__info tr:contains("Карьера") a')
+        .map((_, el) => {
+          const text = $(el).text().toLowerCase();
+          const careerKey = Object.keys(Career).find(
+            (key) => (Career[key as keyof typeof Career] as string).toLowerCase() === text
+          );
+          return careerKey ? Career[careerKey as keyof typeof Career] : undefined;
+        })
+        .get()
+        .filter((c): c is Career => !!c),
+      height:
+        parseFloat(this.extractText($, '.b-post__info tr:contains("Рост") td', ':last-child')) ||
+        undefined,
+      birthDate:
+        this.extractAttribute($, '.b-post__info time[itemprop="birthDate"]', 'datetime') ||
+        undefined,
+      birthPlace:
+        this.extractText($, '.b-post__info tr:contains("Место рождения") td', ':last-child') ||
+        undefined,
+      filmography,
     };
   }
 

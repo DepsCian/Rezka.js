@@ -21,9 +21,10 @@ export class Scraper {
       followRedirect: true,
       maxRedirects: 5,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
-        'Referer': baseURL,
-        'Origin': baseURL,
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+        Referer: baseURL,
+        Origin: baseURL,
       },
       ...config,
     });
@@ -59,7 +60,11 @@ export class Scraper {
    * @param config Optional Got request configuration.
    * @returns The response data.
    */
-  public async post(path: string, data?: any, config?: OptionsOfTextResponseBody) {
+  public async post(
+    path: string,
+    data?: Record<string, string | number | boolean>,
+    config?: OptionsOfTextResponseBody
+  ) {
     try {
       return await this.client.post(path, { ...config, form: data });
     } catch (error) {

@@ -17,48 +17,48 @@ export class Comments extends Page<Paginated<Comment>> {
         cstart: page,
         type: 0,
         comment_id: 0,
-        skin: 'hdrezka'
+        skin: 'hdrezka',
       },
       headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+        'X-Requested-With': 'XMLHttpRequest',
+      },
     });
 
     const data = JSON.parse(response.body);
     const $ = load(data.comments);
 
     const parseComment = (el: Element): Comment => {
-        const $el = $(el);
-        const id = Number($el.data('id'));
-        const authorName = $el.find('.name').first().text();
-        const avatar = $el.find('.ava img').first().attr('src') || '';
-        const text = $el.find('.text').first().text();
-        const date = parseDateTime($el.find('.date').first().text());
-        const likes = Number($el.find('.b-comment__likes_count i').first().text());
-        const isSpoiler = $el.find('.text.spoiler').first().length > 0;
-        
-        const replies: Comment[] = [];
-        $el.find('> ol > li').each((_, replyEl) => {
-            replies.push(parseComment(replyEl));
-        });
+      const $el = $(el);
+      const id = Number($el.data('id'));
+      const authorName = $el.find('.name').first().text();
+      const avatar = $el.find('.ava img').first().attr('src') || '';
+      const text = $el.find('.text').first().text();
+      const date = parseDateTime($el.find('.date').first().text());
+      const likes = Number($el.find('.b-comment__likes_count i').first().text());
+      const isSpoiler = $el.find('.text.spoiler').first().length > 0;
 
-        return {
-            id,
-            author: {
-                name: authorName,
-                avatar
-            },
-            text,
-            date: date || '',
-            likes,
-            isSpoiler,
-            replies
-        };
+      const replies: Comment[] = [];
+      $el.find('> ol > li').each((_, replyEl) => {
+        replies.push(parseComment(replyEl));
+      });
+
+      return {
+        id,
+        author: {
+          name: authorName,
+          avatar,
+        },
+        text,
+        date: date || '',
+        likes,
+        isSpoiler,
+        replies,
+      };
     };
 
     const comments: Comment[] = [];
     $('body > ol > li').each((_, el) => {
-        comments.push(parseComment(el));
+      comments.push(parseComment(el));
     });
 
     const $$ = load(data.navigation);
@@ -70,8 +70,8 @@ export class Comments extends Page<Paginated<Comment>> {
       meta: {
         currentPage: page,
         pageSize: comments.length,
-        totalPages
-      }
+        totalPages,
+      },
     };
   }
 
@@ -82,19 +82,19 @@ export class Comments extends Page<Paginated<Comment>> {
   public async like(comment_id: number): Promise<void> {
     await this.scraper.client.get(`engine/ajax/comments_like.php?id=${comment_id}`, {
       headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+        'X-Requested-With': 'XMLHttpRequest',
+      },
     });
   }
 
   public async getLikes(comment_id: number): Promise<Like[]> {
     const response = await this.scraper.client.post('ajax/comments_likes/', {
       form: {
-        comment_id
+        comment_id,
       },
       headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+        'X-Requested-With': 'XMLHttpRequest',
+      },
     });
 
     const data = JSON.parse(response.body);
@@ -112,8 +112,8 @@ export class Comments extends Page<Paginated<Comment>> {
       likes.push({
         author: {
           name,
-          avatar
-        }
+          avatar,
+        },
       });
     });
 

@@ -3,7 +3,7 @@ import type { Scraper } from '../core/scraper';
 import { ContentType } from '../types';
 import type { GenreInfo } from '../types';
 
-export class Genres extends Page<any> {
+export class Genres extends Page<Record<ContentType, GenreInfo[]>> {
   constructor(scraper: Scraper) {
     super(scraper);
   }
@@ -16,7 +16,7 @@ export class Genres extends Page<any> {
     $('#topnav-menu .b-topnav__item').each((_, item) => {
       const $item = $(item);
       const categoryText = this.extractText($, $item, '.b-topnav__item-link');
-      const contentType = Object.values(ContentType).find(c => c === categoryText);
+      const contentType = Object.values(ContentType).find((c) => c === categoryText);
 
       if (contentType) {
         const genres: GenreInfo[] = [];
@@ -24,7 +24,7 @@ export class Genres extends Page<any> {
           const $genreEl = $(genreEl);
           genres.push({
             name: this.extractText($, $genreEl),
-            url: this.extractAttribute($, $genreEl, 'href')
+            url: this.extractAttribute($, $genreEl, 'href'),
           });
         });
         result[contentType] = genres;
@@ -34,7 +34,7 @@ export class Genres extends Page<any> {
     return result;
   }
 
-  public async extract(): Promise<any> {
+  public async extract(): Promise<Record<ContentType, GenreInfo[]>> {
     throw new Error('This method is not applicable for the Genres parser. Use getAll() instead.');
   }
 }

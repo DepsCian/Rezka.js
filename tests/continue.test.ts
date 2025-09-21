@@ -8,9 +8,11 @@ describe('Continue Parser', () => {
     // IMPORTANT: To run this test, you must provide your own credentials.
     const login = process.env.TEST_LOGIN;
     const password = process.env.TEST_PASSWORD;
-    
+
     if (!login || !password) {
-      console.warn('Skipping "continue" test: HDREZKA_LOGIN and HDREZKA_PASSWORD environment variables are not set.');
+      console.warn(
+        'Skipping "continue" test: HDREZKA_LOGIN and HDREZKA_PASSWORD environment variables are not set.'
+      );
       return;
     }
 

@@ -4,14 +4,20 @@ import { Genre, Filter } from '../types';
 import type { Movie, Paginated } from '../types';
 import { parseMovies } from './utils';
 
-type MoviesParams = { genre?: Genre, genreUrl?: string, filter?: Filter };
+type MoviesParams = { genre?: Genre; genreUrl?: string; filter?: Filter };
 
 export class Movies extends Page<Movie[]> {
   constructor(scraper: Scraper) {
     super(scraper);
   }
 
-  public async get({ page = 1, pageSize = 36, genre, genreUrl, filter }: { page?: number, pageSize?: number } & MoviesParams): Promise<Paginated<Movie>> {
+  public async get({
+    page = 1,
+    pageSize = 36,
+    genre,
+    genreUrl,
+    filter,
+  }: { page?: number; pageSize?: number } & MoviesParams): Promise<Paginated<Movie>> {
     const genrePaths: { [key in Genre]?: string } = {
       [Genre.FILMS]: 'films',
       [Genre.SERIES]: 'series',
@@ -25,10 +31,10 @@ export class Movies extends Page<Movie[]> {
     } else if (genre && genrePaths[genre]) {
       basePath = `${genrePaths[genre]}/`;
     }
-    
+
     const pagePath = page > 1 ? `page/${page}/` : '';
     const path = `${basePath}${pagePath}`;
-    
+
     const searchParams = new URLSearchParams();
     if (filter) {
       searchParams.set('filter', filter);
@@ -39,7 +45,7 @@ export class Movies extends Page<Movie[]> {
 
     const moviesOnPage = parseMovies($, {
       extractText: this.extractText.bind(this),
-      extractAttribute: this.extractAttribute.bind(this)
+      extractAttribute: this.extractAttribute.bind(this),
     });
 
     return {
@@ -47,7 +53,7 @@ export class Movies extends Page<Movie[]> {
       meta: {
         currentPage: page,
         pageSize,
-      }
+      },
     };
   }
 
@@ -70,10 +76,10 @@ export class Movies extends Page<Movie[]> {
       } else if (genre && genrePaths[genre]) {
         basePath = `${genrePaths[genre]}/`;
       }
-      
+
       const pagePath = page > 1 ? `page/${page}/` : '';
       const path = `${basePath}${pagePath}`;
-      
+
       const searchParams = new URLSearchParams();
       if (filter) {
         searchParams.set('filter', filter);
@@ -84,7 +90,7 @@ export class Movies extends Page<Movie[]> {
 
       const moviesOnPage = parseMovies($, {
         extractText: this.extractText.bind(this),
-        extractAttribute: this.extractAttribute.bind(this)
+        extractAttribute: this.extractAttribute.bind(this),
       });
 
       if (moviesOnPage.length === 0) {
@@ -93,10 +99,10 @@ export class Movies extends Page<Movie[]> {
       }
 
       allMovies.push(...moviesOnPage);
-      
+
       const nextButton = $('.b-navigation__next');
       if (nextButton.length === 0 || nextButton.parent().is('span')) {
-          hasNextPage = false;
+        hasNextPage = false;
       }
 
       page++;
@@ -106,6 +112,8 @@ export class Movies extends Page<Movie[]> {
   }
 
   public async extract(): Promise<Movie[]> {
-    throw new Error('This method is not applicable for the Movies parser. Use get() or getAll() instead.');
+    throw new Error(
+      'This method is not applicable for the Movies parser. Use get() or getAll() instead.'
+    );
   }
 }
