@@ -197,3 +197,18 @@ export interface LikeAuthor {
   name: string;
   avatar: string;
 }
+
+export interface LoginResult {
+  success: boolean;
+  message?: string;
+}
+
+export interface UserProfile {
+  email: string | null;
+  gender: string | null;
+  avatar: string | null;
+}
+
+export type MoviesParams = { genre?: Genre; genreUrl?: string; filter?: Filter };
+
+export type PersonInput = string | { personId: number; movieId: number };

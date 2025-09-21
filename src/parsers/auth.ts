@@ -1,17 +1,7 @@
 import { Page } from '@/core/page';
 import type { Scraper } from '@/core/scraper';
 import { AuthError } from '@/errors';
-
-export interface LoginResult {
-  success: boolean;
-  message?: string;
-}
-
-export interface UserProfile {
-  email: string | null;
-  gender: string | null;
-  avatar: string | null;
-}
+import type { LoginResult, UserProfile } from '@/types';
 
 export class Auth extends Page<LoginResult | UserProfile> {
   private userId: string | null = null;

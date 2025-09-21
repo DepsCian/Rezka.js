@@ -1,6 +1,6 @@
 {
   "name": "rezka.js",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A powerful Node.js library for the unofficial HDRezka API. This scraper and parser allows you to programmatically access movies, series, and user data with a clean, promise-based interface.",
   "author": "DepsCian <ciandeps@gmail.com>",
   "homepage": "https://github.com/DepsCian/rezka.js#readme",
