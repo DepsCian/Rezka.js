@@ -44,6 +44,7 @@ export interface Translator {
   id: number;
   name: string;
   popularity?: number;
+  isPaid?: boolean;
 }
 
 export interface Rating {
@@ -122,6 +123,14 @@ export interface MovieDetails {
     title?: string;
     releaseDate?: string;
   }[];
+  franchise?: FranchisePart[];
+}
+
+export interface FranchisePart {
+  url: string;
+  title: string;
+  year: number;
+  rating?: number;
 }
 
 export interface PersonDetails {
@@ -163,4 +172,28 @@ export interface WatchedMovie {
   details: string;
   lastWatchedInfo: string;
   lastWatchedAt: string;
+}
+
+export interface Comment {
+    id: number;
+    author: CommentAuthor;
+    text: string;
+    date: string;
+    likes: number;
+    isSpoiler: boolean;
+    replies: Comment[];
+}
+
+export interface CommentAuthor {
+    name: string;
+    avatar: string;
+}
+
+export interface Like {
+    author: LikeAuthor;
+}
+
+export interface LikeAuthor {
+    name: string;
+    avatar: string;
 }

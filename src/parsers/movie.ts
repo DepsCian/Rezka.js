@@ -1,6 +1,6 @@
 import { Page } from '../core/page';
 import type { Scraper } from '../core/scraper';
-import type { MovieDetails, Season, Rating } from '../types';
+import type { MovieDetails, Season, Rating, FranchisePart } from '../types';
 import {
   parseLinks,
   parsePersons,
@@ -9,6 +9,7 @@ import {
 } from './utils';
 import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
+
 export class Movie extends Page<MovieDetails> {
   constructor(scraper: Scraper) {
     super(scraper);
@@ -25,6 +26,7 @@ export class Movie extends Page<MovieDetails> {
     const credits = this._extractCredits($, infoTable);
     const ratings = this._extractRatings($);
     const seriesInfo = this._extractSeriesInfo($, parseTranslators($));
+    const franchise = this._extractFranchise($);
     
     const description = this.extractText($, '.b-post__description_text');
     
@@ -38,7 +40,7 @@ export class Movie extends Page<MovieDetails> {
           season: Number(seasonMatch[1]),
           episode: Number(seasonMatch[2]),
           title: $el.find('.td-2 b').text() || undefined,
-          releaseDate: $el.find('.td-4').text() || undefined,
+          releaseDate: parseDate($el.find('.td-4').text()),
         });
       }
     });
@@ -52,6 +54,7 @@ export class Movie extends Page<MovieDetails> {
       rating: ratings,
       roadmap: roadmap.length > 0 ? roadmap : undefined,
       ...seriesInfo,
+      franchise,
     };
   }
 
@@ -210,6 +213,31 @@ export class Movie extends Page<MovieDetails> {
         currentWatch,
         translators: updatedTranslators
     }
+  }
+
+  private _extractFranchise($: CheerioAPI): FranchisePart[] | undefined {
+    const franchise: FranchisePart[] = [];
+
+    $('.b-post__partcontent_item').each((_, el) => {
+      const $el = $(el);
+      try {
+        const url = this.extractAttribute($, $el, 'data-url');
+        const title = this.extractText($, $el, '.title');
+        const year = parseInt(this.extractText($, $el, '.year'), 10);
+        const rating = parseFloat(this.extractText($, $el, '.rating'));
+
+        franchise.push({
+          url,
+          title,
+          year,
+          rating: isNaN(rating) ? undefined : rating
+        });
+      } catch (e) {
+        // ignore malformed franchise items
+      }
+    });
+
+    return franchise.length > 0 ? franchise : undefined;
   }
 
   private async _getUrlFromId(id: number): Promise<string> {

@@ -7,6 +7,7 @@ import { Genres } from './parsers/genres';
 import { Search } from './parsers/search';
 import { Continue } from './parsers/continue';
 import { StreamParser } from './parsers/stream';
+import { Comments } from './parsers/comments';
 
 export class Scraper {
   private readonly core: CoreScraper;
@@ -18,6 +19,7 @@ export class Scraper {
   public readonly search: Search;
   public readonly continue: Continue;
   public readonly stream: StreamParser;
+  public readonly comments: Comments;
 
   constructor(baseURL?: string) {
     this.core = new CoreScraper(baseURL);
@@ -29,5 +31,6 @@ export class Scraper {
     this.search = new Search(this.core);
     this.continue = new Continue(this.core);
     this.stream = new StreamParser(this.core);
+    this.comments = new Comments(this.core);
   }
 }

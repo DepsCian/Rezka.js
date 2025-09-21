@@ -47,6 +47,44 @@ export function parseDate(dateStr: string): string | undefined {
   return `${year}-${months[month]}-${day.padStart(2, '0')}`;
 }
 
+export function parseDateTime(dateStr: string): string | undefined {
+    if (!dateStr) return undefined;
+
+    const cleanedDateStr = dateStr.replace('оставлен', '').trim();
+    const now = new Date();
+
+    const timeMatch = cleanedDateStr.match(/(\d{2}):(\d{2})$/);
+    const time = timeMatch ? `${timeMatch[1]}:${timeMatch[2]}:00` : '00:00:00';
+
+    if (cleanedDateStr.includes('сегодня')) {
+        const today = now.toISOString().split('T')[0];
+        return `${today}T${time}.000Z`;
+    }
+    if (cleanedDateStr.includes('вчера')) {
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        return `${yesterdayStr}T${time}.000Z`;
+    }
+
+    const months: { [key: string]: string } = {
+        'января': '01', 'февраля': '02', 'марта': '03', 'апреля': '04', 'мая': '05', 'июня': '06',
+        'июля': '07', 'августа': '08', 'сентября': '09', 'октября': '10', 'ноября': '11', 'декабря': '12'
+    };
+
+    const dateParts = cleanedDateStr.match(/(\d{1,2})\s+(\p{L}+)\s+(\d{4})/u);
+    if (dateParts && dateParts[1] && dateParts[2] && dateParts[3]) {
+        const day = dateParts[1].padStart(2, '0');
+        const month = months[dateParts[2]];
+        const year = dateParts[3];
+        if (day && month && year) {
+            return `${year}-${month}-${day}T${time}.000Z`;
+        }
+    }
+
+    return undefined;
+}
+
 export function parsePersons($: CheerioAPI, table: Cheerio<Element>, label: string, extractor: Extractor): PersonCredit[] | undefined {
   const persons: PersonCredit[] = [];
   table.find(`tr:contains("${label}") .persons-list-holder .item`).each((_, el) => {
@@ -104,7 +142,8 @@ export function parseTranslators($: any): Translator[] | undefined {
             translators.push({
                 id: Number(id),
                 name: name.trim(),
-                popularity
+                popularity,
+                isPaid: $el.hasClass('b-prem_translator')
             });
         }
     });

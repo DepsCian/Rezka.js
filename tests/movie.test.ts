@@ -16,7 +16,7 @@ describe('Movie Parser', () => {
     const scraper = new Scraper();
     await scraper.auth.login(login, password);
 
-    const movieDetails = await scraper.movie.get(646);
+    const movieDetails = await scraper.movie.get(80082);
 
     if (movieDetails.currentWatch && movieDetails.seasons) {
       const { streams, subtitles } = await scraper.stream.get(movieDetails.id, movieDetails.currentWatch.translatorId, movieDetails.currentWatch.season, movieDetails.currentWatch.episode);
