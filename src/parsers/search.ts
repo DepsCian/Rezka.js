@@ -9,18 +9,26 @@ export class Search extends Page<Movie[]> {
   }
 
   public async get({ query, page = 1, pageSize = 36 }: { query: string, page?: number, pageSize?: number }): Promise<Paginated<Movie>> {
-    const allMovies = await this.getAll({ query });
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const data = allMovies.slice(startIndex, endIndex);
+    const response = await this.scraper.get('search/', {
+      searchParams: {
+        do: 'search',
+        subaction: 'search',
+        q: query,
+        page: String(page),
+      },
+    });
+
+    const $ = this.parse(response.body);
+    const moviesOnPage = parseMovies($, {
+      extractText: this.extractText.bind(this),
+      extractAttribute: this.extractAttribute.bind(this)
+    });
 
     return {
-      data,
+      data: moviesOnPage.slice(0, pageSize),
       meta: {
         currentPage: page,
         pageSize,
-        total: allMovies.length,
-        totalPages: Math.ceil(allMovies.length / pageSize),
       }
     };
   }
@@ -41,7 +49,10 @@ export class Search extends Page<Movie[]> {
       });
 
       const $ = this.parse(response.body);
-      const moviesOnPage = parseMovies($);
+      const moviesOnPage = parseMovies($, {
+        extractText: this.extractText.bind(this),
+        extractAttribute: this.extractAttribute.bind(this)
+      });
 
       if (moviesOnPage.length === 0) {
         hasNextPage = false;
@@ -50,8 +61,9 @@ export class Search extends Page<Movie[]> {
 
       allMovies.push(...moviesOnPage);
 
-      if ($('.b-navigation__next').length === 0) {
-        hasNextPage = false;
+      const nextButton = $('.b-navigation__next');
+      if (nextButton.length === 0 || nextButton.parent().is('span')) {
+          hasNextPage = false;
       }
       
       page++;

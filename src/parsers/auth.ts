@@ -1,5 +1,6 @@
 import { Page } from '../core/page';
 import type { Scraper } from '../core/scraper';
+import { AuthError } from '../errors';
 
 export interface LoginResult {
   success: boolean;
@@ -48,16 +49,16 @@ export class Auth extends Page<LoginResult | UserProfile> {
 
   public async getProfile(): Promise<UserProfile> {
     if (!this.userId) {
-      throw new Error('User is not logged in or user ID could not be retrieved.');
+      throw new AuthError('User is not logged in or user ID could not be retrieved.');
     }
 
     const response = await this.scraper.get(`user/${this.userId}/`);
     const $ = this.parse(response.body);
 
     return {
-      email: ($('#email').val() as string) || null,
-      gender: $('#gender option:selected').text() || null,
-      avatar: $('#avatar-profile img').attr('src') || null
+      email: this.extractAttribute($, '#email', 'value') || null,
+      gender: this.extractText($, '#gender option:selected') || null,
+      avatar: this.extractAttribute($, '#avatar-profile img', 'src') || null
     };
   }
 

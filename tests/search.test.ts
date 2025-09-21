@@ -13,7 +13,6 @@ describe('Search Parser', () => {
     expect(paginatedResult.data.length).toBeGreaterThan(0);
     expect(paginatedResult.meta.currentPage).toBe(1);
     expect(paginatedResult.meta.pageSize).toBe(10);
-    expect(paginatedResult.meta.total).toBeGreaterThan(0);
     
     const allMovies = await scraper.search.getAll({ query: 'Во' });
     const outputPath = path.join(process.cwd(), 'search.json');

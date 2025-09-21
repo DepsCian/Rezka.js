@@ -6,16 +6,15 @@ import path from 'path';
 describe('Person Parser', () => {
   it('should get detailed information for a person and save to a file', async () => {
     const scraper = new Scraper();
-    // Person ID: 10144 (Анна Ганн), Movie ID: 646 (Во все тяжкие)
     const personDetails = await scraper.person.get({ personId: 657, movieId: 646 });
 
     const outputPath = path.join(process.cwd(), 'person.json');
     fs.writeFileSync(outputPath, JSON.stringify(personDetails, null, 2));
     console.log(`Saved person details to ${outputPath}`);
 
-    expect(personDetails.id).toBe(10144);
-    expect(personDetails.name).toBe('Анна Ганн');
-    expect(personDetails.url).toContain('10144-anna-gann');
+    expect(personDetails.id).toBe(657);
+    expect(personDetails.name).toBe('Брайан Крэнстон');
+    expect(personDetails.url).toContain('657-brayan-krenston');
   }, {
     timeout: 30000
   });

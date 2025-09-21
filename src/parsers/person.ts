@@ -1,5 +1,6 @@
 import { Page } from '../core/page';
 import type { Scraper } from '../core/scraper';
+import { NetworkError } from '../errors';
 import { Career } from '../types';
 import type { PersonDetails, Movie } from '../types';
 
@@ -25,7 +26,7 @@ export class Person extends Page<PersonDetails> {
     const body = response.body as { success: boolean, message: string, person?: { link: string } };
 
     if (!body.success || !body.person?.link) {
-      throw new Error(body.message || 'Failed to fetch person URL from AJAX');
+      throw new NetworkError(body.message || 'Failed to fetch person URL from AJAX');
     }
 
     return body.person.link;
@@ -53,12 +54,12 @@ export class Person extends Page<PersonDetails> {
       $careerEl.find('.b-sidelist .b-content__inline_item').each((_, movieEl) => {
         const $movieEl = $(movieEl);
         movies.push({
-          id: Number($movieEl.attr('data-id')),
-          url: $movieEl.find('.b-content__inline_item-cover a').attr('href') || '',
-          title: $movieEl.find('.b-content__inline_item-link a').text(),
-          imageUrl: $movieEl.find('.b-content__inline_item-cover img').attr('src') || '',
+          id: Number(this.extractAttribute($, $movieEl, 'data-id')),
+          url: this.extractAttribute($, $movieEl, 'href', '.b-content__inline_item-cover a'),
+          title: this.extractText($, $movieEl, '.b-content__inline_item-link a'),
+          imageUrl: this.extractAttribute($, $movieEl, 'src', '.b-content__inline_item-cover img'),
           type: $movieEl.find('.cat').is('.series') ? 'series' : 'movie',
-          details: $movieEl.find('.misc').text()
+          details: this.extractText($, $movieEl, '.misc')
         });
       });
 
@@ -75,17 +76,17 @@ export class Person extends Page<PersonDetails> {
     return {
       id: personId,
       url: url,
-      name: $('.b-post__title .t1').text(),
-      originalName: $('.b-post__title .t2').text() || undefined,
-      photo: $('.b-sidecover img').attr('src') || '',
+      name: this.extractText($, '.b-post__title .t1'),
+      originalName: this.extractText($, '.b-post__title .t2') || undefined,
+      photo: this.extractAttribute($, '.b-sidecover img', 'src'),
       careers: $('.b-post__info tr:contains("Карьера") a').map((_, el) => {
         const text = $(el).text().toLowerCase();
         const careerKey = Object.keys(Career).find(key => (Career[key as keyof typeof Career] as string).toLowerCase() === text);
         return careerKey ? Career[careerKey as keyof typeof Career] : undefined;
       }).get().filter((c): c is Career => !!c),
-      height: parseFloat($('.b-post__info tr:contains("Рост") td').eq(1).text()) || undefined,
-      birthDate: $('.b-post__info time[itemprop="birthDate"]').attr('datetime') || undefined,
-      birthPlace: $('.b-post__info tr:contains("Место рождения") td').eq(1).text().trim() || undefined,
+      height: parseFloat(this.extractText($, '.b-post__info tr:contains("Рост") td', ':last-child')) || undefined,
+      birthDate: this.extractAttribute($, '.b-post__info time[itemprop="birthDate"]', 'datetime') || undefined,
+      birthPlace: this.extractText($, '.b-post__info tr:contains("Место рождения") td', ':last-child') || undefined,
       filmography
     };
   }

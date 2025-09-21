@@ -1,6 +1,7 @@
-import got from 'got';
+import got, { HTTPError, RequestError } from 'got';
 import type { Got, OptionsOfTextResponseBody, ExtendOptions } from 'got';
 import { CookieJar } from 'tough-cookie';
+import { NetworkError, NotFoundError } from '../errors';
 
 export class Scraper {
   public readonly client: Got;
@@ -31,10 +32,20 @@ export class Scraper {
    * @returns The response data.
    */
   public async get(path: string, config?: OptionsOfTextResponseBody) {
-    if (path.startsWith('https://') || path.startsWith('http://')) {
-      return this.client.get(path, { ...config, prefixUrl: '' });
+    try {
+      if (path.startsWith('https://') || path.startsWith('http://')) {
+        return await this.client.get(path, { ...config, prefixUrl: '' });
+      }
+      return await this.client.get(path, config);
+    } catch (error) {
+      if (error instanceof HTTPError && error.response.statusCode === 404) {
+        throw new NotFoundError(`Resource not found at ${path}`, error);
+      }
+      if (error instanceof RequestError) {
+        throw new NetworkError(`Request to ${path} failed`, error);
+      }
+      throw error;
     }
-    return this.client.get(path, config);
   }
 
   /**
@@ -45,6 +56,16 @@ export class Scraper {
    * @returns The response data.
    */
   public async post(path: string, data?: any, config?: OptionsOfTextResponseBody) {
-    return this.client.post(path, { ...config, form: data });
+    try {
+      return await this.client.post(path, { ...config, form: data });
+    } catch (error) {
+      if (error instanceof HTTPError && error.response.statusCode === 404) {
+        throw new NotFoundError(`Resource not found at ${path}`, error);
+      }
+      if (error instanceof RequestError) {
+        throw new NetworkError(`Request to ${path} failed`, error);
+      }
+      throw error;
+    }
   }
 }

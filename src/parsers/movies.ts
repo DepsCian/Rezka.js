@@ -11,19 +11,42 @@ export class Movies extends Page<Movie[]> {
     super(scraper);
   }
 
-  public async get({ page = 1, pageSize = 36, ...rest }: { page?: number, pageSize?: number } & MoviesParams): Promise<Paginated<Movie>> {
-    const allMovies = await this.getAll(rest);
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const data = allMovies.slice(startIndex, endIndex);
+  public async get({ page = 1, pageSize = 36, genre, genreUrl, filter }: { page?: number, pageSize?: number } & MoviesParams): Promise<Paginated<Movie>> {
+    const genrePaths: { [key in Genre]?: string } = {
+      [Genre.FILMS]: 'films',
+      [Genre.SERIES]: 'series',
+      [Genre.CARTOONS]: 'cartoons',
+      [Genre.ANIME]: 'animation',
+    };
+
+    let basePath = '';
+    if (genreUrl) {
+      basePath = genreUrl.startsWith('/') ? genreUrl.slice(1) : genreUrl;
+    } else if (genre && genrePaths[genre]) {
+      basePath = `${genrePaths[genre]}/`;
+    }
+    
+    const pagePath = page > 1 ? `page/${page}/` : '';
+    const path = `${basePath}${pagePath}`;
+    
+    const searchParams = new URLSearchParams();
+    if (filter) {
+      searchParams.set('filter', filter);
+    }
+
+    const response = await this.scraper.get(path, { searchParams });
+    const $ = this.parse(response.body);
+
+    const moviesOnPage = parseMovies($, {
+      extractText: this.extractText.bind(this),
+      extractAttribute: this.extractAttribute.bind(this)
+    });
 
     return {
-      data,
+      data: moviesOnPage.slice(0, pageSize),
       meta: {
         currentPage: page,
         pageSize,
-        total: allMovies.length,
-        totalPages: Math.ceil(allMovies.length / pageSize),
       }
     };
   }
@@ -59,7 +82,10 @@ export class Movies extends Page<Movie[]> {
       const response = await this.scraper.get(path, { searchParams });
       const $ = this.parse(response.body);
 
-      const moviesOnPage = parseMovies($);
+      const moviesOnPage = parseMovies($, {
+        extractText: this.extractText.bind(this),
+        extractAttribute: this.extractAttribute.bind(this)
+      });
 
       if (moviesOnPage.length === 0) {
         hasNextPage = false;
@@ -68,8 +94,9 @@ export class Movies extends Page<Movie[]> {
 
       allMovies.push(...moviesOnPage);
       
-      if ($('.b-navigation__next').length === 0) {
-        hasNextPage = false;
+      const nextButton = $('.b-navigation__next');
+      if (nextButton.length === 0 || nextButton.parent().is('span')) {
+          hasNextPage = false;
       }
 
       page++;

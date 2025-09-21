@@ -16,19 +16,18 @@ describe('Movie Parser', () => {
     const scraper = new Scraper();
     await scraper.auth.login(login, password);
 
-    const movieDetails = await scraper.movie.get(79659);
+    const movieDetails = await scraper.movie.get(646);
 
-    // console.log(movieDetails)
-      const season = movieDetails.seasons[0];
-      const episode = season.episodes[0];
-      console.log(season)
-      console.log(episode)
-      if (season && episode) {
-        console.log('PARSING')
-        const { streams, subtitles } = await scraper.stream.get(movieDetails.id, 59, season.id, episode.id);
-        episode.streams = streams;
-        episode.subtitles = subtitles;
+    if (movieDetails.currentWatch && movieDetails.seasons) {
+      const { streams, subtitles } = await scraper.stream.get(movieDetails.id, movieDetails.currentWatch.translatorId, movieDetails.currentWatch.season, movieDetails.currentWatch.episode);
+      const seasonIndex = movieDetails.currentWatch.season - 1;
+      const episodeIndex = movieDetails.currentWatch.episode - 1;
+
+      if (movieDetails.seasons[seasonIndex] && movieDetails.seasons[seasonIndex].episodes[episodeIndex]) {
+        movieDetails.seasons[seasonIndex].episodes[episodeIndex].streams = streams;
+        movieDetails.seasons[seasonIndex].episodes[episodeIndex].subtitles = subtitles;
       }
+    }
 
     const outputPath = path.join(process.cwd(), 'movie.json');
     fs.writeFileSync(outputPath, JSON.stringify(movieDetails, null, 2));

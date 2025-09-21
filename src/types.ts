@@ -89,7 +89,7 @@ export interface MovieDetails {
   id: number;
   url: string;
   title: string;
-  originalTitle: string;
+  originalTitle?: string;
   poster: string;
   slogan?: string;
   releaseDate?: string;

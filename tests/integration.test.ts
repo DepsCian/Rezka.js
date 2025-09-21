@@ -24,14 +24,13 @@ describe('Integration Test', () => {
 
     const movies = await scraper.movies.get({
       genreUrl: firstSubgenreUrl,
-      limit: 5,
     });
 
     const outputPath = path.join(process.cwd(), 'integration_movies.json');
-    fs.writeFileSync(outputPath, JSON.stringify(movies, null, 2));
-    console.log(`Saved ${movies.length} movies to ${outputPath}`);
+    fs.writeFileSync(outputPath, JSON.stringify(movies.data, null, 2));
+    console.log(`Saved ${movies.data.length} movies to ${outputPath}`);
 
-    expect(movies.length).toBe(5);
+    expect(movies.data.length).toBeGreaterThan(0);
   }, {
     timeout: 60000
   });

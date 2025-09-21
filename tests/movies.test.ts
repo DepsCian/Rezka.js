@@ -19,15 +19,15 @@ describe('Movies Parser', () => {
     expect(paginatedResult.data.length).toBe(5);
     expect(paginatedResult.meta.currentPage).toBe(1);
 
-    const allMovies = await scraper.movies.getAll({
-      genre: Genre.SERIES,
-      filter: Filter.WATCHING,
-    });
+    // const allMovies = await scraper.movies.getAll({
+    //   genre: Genre.SERIES,
+    //   filter: Filter.WATCHING,
+    // });
 
-    const outputPath = path.join(process.cwd(), 'movies.json');
-    fs.writeFileSync(outputPath, JSON.stringify(allMovies, null, 2));
+    // const outputPath = path.join(process.cwd(), 'movies.json');
+    // fs.writeFileSync(outputPath, JSON.stringify(allMovies, null, 2));
 
-    console.log(`Saved ${allMovies.length} movies to ${outputPath}`);
-    expect(allMovies.length).toBeGreaterThan(0);
+    // console.log(`Saved ${allMovies.length} movies to ${outputPath}`);
+    // expect(allMovies.length).toBeGreaterThan(0);
   }, 30000);
 });

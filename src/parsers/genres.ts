@@ -15,7 +15,7 @@ export class Genres extends Page<any> {
 
     $('#topnav-menu .b-topnav__item').each((_, item) => {
       const $item = $(item);
-      const categoryText = $item.find('.b-topnav__item-link').text().trim();
+      const categoryText = this.extractText($, $item, '.b-topnav__item-link');
       const contentType = Object.values(ContentType).find(c => c === categoryText);
 
       if (contentType) {
@@ -23,8 +23,8 @@ export class Genres extends Page<any> {
         $item.find('.b-topnav__sub ul.left a').each((_, genreEl) => {
           const $genreEl = $(genreEl);
           genres.push({
-            name: $genreEl.text(),
-            url: $genreEl.attr('href') || ''
+            name: this.extractText($, $genreEl),
+            url: this.extractAttribute($, $genreEl, 'href')
           });
         });
         result[contentType] = genres;

@@ -1,15 +1,14 @@
 import { Page } from '../core/page';
 import type { Scraper } from '../core/scraper';
 import type { MovieDetails, Season, Rating } from '../types';
-import * as cheerio from 'cheerio';
-import type { Element } from 'domhandler';
 import {
   parseLinks,
   parsePersons,
   parseDate,
   parseTranslators,
 } from './utils';
-
+import type { CheerioAPI, Cheerio } from 'cheerio';
+import type { Element } from 'domhandler';
 export class Movie extends Page<MovieDetails> {
   constructor(scraper: Scraper) {
     super(scraper);
@@ -22,12 +21,12 @@ export class Movie extends Page<MovieDetails> {
 
     const primaryInfo = this._extractPrimaryInfo($, url);
     const infoTable = $('.b-post__info');
-    const metadata = this._extractMetadata(infoTable);
+    const metadata = this._extractMetadata($, infoTable);
     const credits = this._extractCredits($, infoTable);
     const ratings = this._extractRatings($);
     const seriesInfo = this._extractSeriesInfo($, parseTranslators($));
     
-    const description = $('.b-post__description_text').text().trim();
+    const description = this.extractText($, '.b-post__description_text');
     
     const roadmap: MovieDetails['roadmap'] = [];
     $('.b-post__schedule_list tr').each((_, el) => {
@@ -56,68 +55,93 @@ export class Movie extends Page<MovieDetails> {
     };
   }
 
-  private _extractPrimaryInfo($: cheerio.CheerioAPI, url: string) {
+  private _extractPrimaryInfo($: CheerioAPI, url: string) {
     const match = url.match(/\/(\d+)-/);
     const id = match ? Number(match[1]) : 0;
-    const title = $('.b-post__title h1').text();
-    const originalTitle = $('.b-post__origtitle').text();
-    const poster = $('.b-sidecover img').attr('src') || '';
+    const title = this.extractText($, '.b-post__title h1');
+    let originalTitle: string | undefined;
+    try {
+      originalTitle = this.extractText($, '.b-post__origtitle');
+    } catch (e) { /* ignore */ }
+    const poster = this.extractAttribute($, '.b-sidecover img', 'src');
 
     return { id, title, originalTitle, poster };
   }
 
-  private _extractMetadata(infoTable: cheerio.Cheerio<Element>) {
-    const slogan = infoTable.find('tr:contains("Слоган") td:last-child').text().trim().replace(/[«»]/g, '');
-    const releaseDate = parseDate(infoTable.find('tr:contains("Дата выхода") td:last-child').text());
-    const country = infoTable.find('tr:contains("Страна") td:last-child').text().trim();
-    const quality = infoTable.find('tr:contains("В качестве") td:last-child').text().trim();
-    const ageRestriction = parseInt(infoTable.find('tr:contains("Возраст") td:last-child').text(), 10) || undefined;
-    const duration = parseInt(infoTable.find('tr:contains("Время") td:last-child').text(), 10) || undefined;
+  private _extractMetadata($: CheerioAPI, infoTable: Cheerio<Element>) {
+    let slogan: string | undefined;
+    try {
+      slogan = this.extractText($, infoTable, 'tr:contains("Слоган") td:last-child').replace(/[«»]/g, '');
+    } catch (e) { /* ignore */ }
 
-    return { 
-      slogan: slogan || undefined,
+    const releaseDate = parseDate(this.extractText($, infoTable, 'tr:contains("Дата выхода") td:last-child'));
+    const country = this.extractText($, infoTable, 'tr:contains("Страна") td:last-child');
+    const quality = this.extractText($, infoTable, 'tr:contains("В качестве") td:last-child');
+    
+    let ageRestriction: number | undefined;
+    try {
+      ageRestriction = parseInt(this.extractText($, infoTable, 'tr:contains("Возраст") td:last-child'), 10);
+    } catch (e) { /* ignore */ }
+
+    let duration: number | undefined;
+    try {
+      duration = parseInt(this.extractText($, infoTable, 'tr:contains("Время") td:last-child'), 10);
+    } catch (e) { /* ignore */ }
+
+    return {
+      slogan,
       releaseDate,
       country: country || undefined,
       quality: quality || undefined,
-      ageRestriction,
-      duration
+      ageRestriction: isNaN(ageRestriction!) ? undefined : ageRestriction,
+      duration: isNaN(duration!) ? undefined : duration
     };
   }
 
-  private _extractCredits($: cheerio.CheerioAPI, infoTable: cheerio.Cheerio<Element>) {
-    const directors = parsePersons($, infoTable, 'Режиссер');
-    const actors = parsePersons($, infoTable, 'В ролях актеры');
-    const genres = parseLinks($, infoTable, 'Жанр');
-    const collections = parseLinks($, infoTable, 'Из серии');
-    const lists = parseLinks($, infoTable, 'Входит в списки');
+  private _extractCredits($: CheerioAPI, infoTable: Cheerio<Element>) {
+    const extractor = {
+      extractText: this.extractText.bind(this),
+      extractAttribute: this.extractAttribute.bind(this)
+    };
+    const directors = parsePersons($, infoTable, 'Режиссер', extractor);
+    const actors = parsePersons($, infoTable, 'В ролях актеры', extractor);
+    const genres = parseLinks($, infoTable, 'Жанр', extractor);
+    const collections = parseLinks($, infoTable, 'Из серии', extractor);
+    const lists = parseLinks($, infoTable, 'Входит в списки', extractor);
 
     return { directors, actors, genres, collections, lists };
   }
 
-  private _extractRatings($: cheerio.CheerioAPI) {
-    const imdbRatingNode = $('.b-post__info_rates.imdb');
-    const imdbRating = Number(imdbRatingNode.find('.bold').text());
-    const imdbVotesMatch = imdbRatingNode.find('i').text().match(/\(([\d\s,]+)\)/);
-    const imdbVotes = imdbVotesMatch ? Number(imdbVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
-
-    const kinopoiskRatingNode = $('.b-post__info_rates.kp');
-    const kinopoiskRating = Number(kinopoiskRatingNode.find('.bold').text());
-    const kinopoiskVotesMatch = kinopoiskRatingNode.find('i').text().match(/\(([\d\s,]+)\)/);
-    const kinopoiskVotes = kinopoiskVotesMatch ? Number(kinopoiskVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
-
-    const mainRatingText = $('.b-post__rating .num').text();
-    const mainVotesText = $('.b-post__rating .votes').text();
-    const mainMatch = mainVotesText.match(/\(([\d,]+)\)/);
-
+  private _extractRatings($: CheerioAPI) {
     const rating: { imdb?: Rating; kinopoisk?: Rating; main?: Rating; } = {};
-    if(imdbRating && imdbVotes) rating.imdb = { rating: imdbRating, votes: imdbVotes };
-    if(kinopoiskRating && kinopoiskVotes) rating.kinopoisk = { rating: kinopoiskRating, votes: kinopoiskVotes };
-    if(mainRatingText && mainMatch && mainMatch[1]) rating.main = { rating: Number(mainRatingText), votes: Number(mainMatch[1].replace(/,/g, '')) };
+
+    try {
+      const imdbRatingNode = $('.b-post__info_rates.imdb');
+      const imdbRating = Number(this.extractText($, imdbRatingNode, '.bold'));
+      const imdbVotesMatch = this.extractText($, imdbRatingNode, 'i').match(/\(([\d\s,]+)\)/);
+      const imdbVotes = imdbVotesMatch ? Number(imdbVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
+      if(imdbRating && imdbVotes) rating.imdb = { rating: imdbRating, votes: imdbVotes };
+    } catch (e) { /* ignore */ }
+
+    try {
+      const kinopoiskRatingNode = $('.b-post__info_rates.kp');
+      const kinopoiskRating = Number(this.extractText($, kinopoiskRatingNode, '.bold'));
+      const kinopoiskVotesMatch = this.extractText($, kinopoiskRatingNode, 'i').match(/\(([\d\s,]+)\)/);
+      const kinopoiskVotes = kinopoiskVotesMatch ? Number(kinopoiskVotesMatch[1]?.replace(/[\s,]/g, '')) : 0;
+      if(kinopoiskRating && kinopoiskVotes) rating.kinopoisk = { rating: kinopoiskRating, votes: kinopoiskVotes };
+    } catch (e) { /* ignore */ }
+
+    try {
+      const mainRatingText = this.extractText($, '.b-post__rating .num');
+      const mainVotesText = this.extractText($, '.b-post__rating .votes');
+      const mainMatch = mainVotesText.match(/\(([\d,]+)\)/);
+      if(mainRatingText && mainMatch && mainMatch[1]) rating.main = { rating: Number(mainRatingText), votes: Number(mainMatch[1].replace(/,/g, '')) };
+    } catch (e) { /* ignore */ }
 
     return rating;
   }
 
-  private _extractSeriesInfo($: cheerio.CheerioAPI, translators: import('../types').Translator[] | undefined) {
+  private _extractSeriesInfo($: CheerioAPI, translators: import('../types').Translator[] | undefined) {
     let currentWatch: MovieDetails['currentWatch'] | undefined;
     const seasons: Season[] = [];
     let updatedTranslators = translators;
@@ -195,11 +219,8 @@ export class Movie extends Page<MovieDetails> {
     });
 
     const $ = this.parse(response.body);
-    const url = $('.b-content__bubble_title a').attr('href');
+    const url = this.extractAttribute($, '.b-content__bubble_title a', 'href');
 
-    if (!url) {
-      throw new Error(`Could not find URL for movie with ID ${id}`);
-    }
     return url;
   }
 

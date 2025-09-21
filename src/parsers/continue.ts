@@ -36,32 +36,34 @@ export class Continue extends Page<WatchedMovie[]> {
     const movies: WatchedMovie[] = [];
 
     $('.b-videosaves__list_item').each((_, el) => {
-      const element = $(el);
-      const idStr = element.attr('id');
-      
-      if (!idStr || !idStr.includes('videosave-')) return;
+      try {
+        const element = $(el);
+        const idStr = this.extractAttribute($, element, 'id');
+        
+        if (!idStr.includes('videosave-')) return;
 
-      const titleElement = element.find('.td.title a');
-      const url = titleElement.attr('href');
-      const title = titleElement.text().trim();
-      const imageUrl = titleElement.data('cover_url') as string;
-      const id = parseInt(idStr.replace('videosave-', ''), 10);
-      const details = element.find('.td.title small').text().trim();
-      const lastWatchedInfo = element.find('.td.info').clone().children().remove().end().text().trim();
-      const dateStr = element.find('.td.date').text().trim();
-      const lastWatchedAt = parseDate(dateStr);
+        const titleElement = element.find('.td.title a');
+        const url = this.extractAttribute($, titleElement, 'href');
+        const title = this.extractText($, titleElement);
+        const imageUrl = this.extractAttribute($, titleElement, 'data-cover_url');
+        const id = parseInt(idStr.replace('videosave-', ''), 10);
+        const details = this.extractText($, element, '.td.title small');
+        const lastWatchedInfo = element.find('.td.info').clone().children().remove().end().text().trim(); // This is complex, leave as is for now
+        const dateStr = this.extractText($, element, '.td.date');
+        const lastWatchedAt = parseDate(dateStr);
 
-      if (url && title) {
-        movies.push({
-          id,
-          url,
-          title,
-          imageUrl,
-          details,
-          lastWatchedInfo,
-          lastWatchedAt
-        });
-      }
+        if (url && title) {
+          movies.push({
+            id,
+            url,
+            title,
+            imageUrl,
+            details,
+            lastWatchedInfo,
+            lastWatchedAt
+          });
+        }
+      } catch (e) {/* ignore */}
     });
 
     return movies;

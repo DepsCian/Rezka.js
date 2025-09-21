@@ -1,27 +1,30 @@
-import type { CheerioAPI } from 'cheerio';
+import type { CheerioAPI, Cheerio } from 'cheerio';
 import type { Element } from 'domhandler';
 import type { Movie, Stream, Subtitle, PersonCredit, Link, Translator } from '../types';
 
-export function parseMovies($: CheerioAPI): Movie[] {
+type Extractor = {
+  extractText: ($: CheerioAPI, context: Cheerio<Element> | string, selector?: string) => string;
+  extractAttribute: ($: CheerioAPI, context: Cheerio<Element> | string, attribute: string, selector?: string) => string;
+}
+
+export function parseMovies($: CheerioAPI, extractor: Extractor): Movie[] {
   const moviesOnPage: Movie[] = [];
   $('.b-content__inline_item').each((_, el) => {
     const $el = $(el);
-    const id = Number($el.attr('data-id'));
-    const url = $el.find('.b-content__inline_item-cover a').attr('href') || '';
-    const title = $el.find('.b-content__inline_item-link a').text();
-    const imageUrl = $el.find('.b-content__inline_item-cover img').attr('src') || '';
-    const type = $el.find('.cat i.entity').text();
-    const details = $el.find('.b-content__inline_item-link div').text();
-    const additionalInfo = $el.find('.info').text() || undefined;
-
     moviesOnPage.push({
-      id,
-      url,
-      title,
-      imageUrl,
-      type,
-      details,
-      additionalInfo,
+      id: Number(extractor.extractAttribute($, $el, 'data-id')),
+      url: extractor.extractAttribute($, $el, 'href', '.b-content__inline_item-cover a'),
+      title: extractor.extractText($, $el, '.b-content__inline_item-link a'),
+      imageUrl: extractor.extractAttribute($, $el, 'src', '.b-content__inline_item-cover img'),
+      type: extractor.extractText($, $el, '.cat i.entity'),
+      details: extractor.extractText($, $el, '.b-content__inline_item-link div'),
+      additionalInfo: (() => {
+        try {
+          return extractor.extractText($, $el, '.info');
+        } catch (e) {
+          return undefined;
+        }
+      })(),
     });
   });
   return moviesOnPage;
@@ -44,27 +47,31 @@ export function parseDate(dateStr: string): string | undefined {
   return `${year}-${months[month]}-${day.padStart(2, '0')}`;
 }
 
-export function parsePersons($: any, table: any, label: string): PersonCredit[] | undefined {
+export function parsePersons($: CheerioAPI, table: Cheerio<Element>, label: string, extractor: Extractor): PersonCredit[] | undefined {
   const persons: PersonCredit[] = [];
-  table.find(`tr:contains("${label}") .persons-list-holder .item`).each((_: any, el: any) => {
+  table.find(`tr:contains("${label}") .persons-list-holder .item`).each((_, el) => {
     const $el = $(el).find('.person-name-item');
-    const id = Number($el.attr('data-id'));
-    const name = $el.find('span[itemprop="name"]').text();
-    if (id && name) {
+    try {
+      const id = Number(extractor.extractAttribute($, $el, 'data-id'));
+      const name = extractor.extractText($, $el, 'span[itemprop="name"]');
       persons.push({ id, name });
+    } catch (e) {
+      // Ignore if person item is malformed
     }
   });
   return persons.length > 0 ? persons : undefined;
 }
 
-export function parseLinks($: any, table: any, label: string): Link[] | undefined {
+export function parseLinks($: CheerioAPI, table: Cheerio<Element>, label: string, extractor: Extractor): Link[] | undefined {
   const links: Link[] = [];
-  table.find(`tr:contains("${label}") a`).each((_: any, el: any) => {
+  table.find(`tr:contains("${label}") a`).each((_, el) => {
     const $el = $(el);
-    const name = $el.text();
-    const url = $el.attr('href');
-    if (name && url) {
+    try {
+      const name = extractor.extractText($, $el);
+      const url = extractor.extractAttribute($, $el, 'href');
       links.push({ name, url });
+    } catch (e) {
+      // Ignore if link is malformed
     }
   });
   return links.length > 0 ? links : undefined;
